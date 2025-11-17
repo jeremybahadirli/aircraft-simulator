@@ -52,7 +52,7 @@ function drawWind(wind) {
 	push();
 	scale(1, -1);
 	textSize(3);
-	text(wind.vel.mag(), -5, 6);
+	text(round(wind.vel.mag(), 10), -5, 6);
 	pop();
 
 	push();
