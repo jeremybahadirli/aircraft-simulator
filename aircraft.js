@@ -3,8 +3,8 @@ class Aircraft {
 		this.pos = pos;
 		this.vel = vel;
 		this.halo = halo;
-		this.trk = p5.Vector.add(this.vel, wind.vel);
 		this.color = color;
+		this.trk = p5.Vector.add(this.vel, wind.vel);
 	}
 
 	static onHeading({ pos, heading, TAS, halo, color }) {
