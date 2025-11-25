@@ -2,18 +2,18 @@ const MILLIS_PER_HOUR = 3600000;
 const MAX_LOG_LINES = 400;
 
 let time = 0;
-
+let canvas;
 const logLines = [];
 let nextLogTime = 0;
 let logDirty = false;
 
 function setup() {
 	angleMode(DEGREES);
+	Logger.log('\n');
 
 	initConfig();
-
-	const canvas = createCanvas(settings.displaySize.x, settings.displaySize.y);
 	createUI();
+	canvas = createCanvas().parent(canvasDiv);
 
 	const defaultPlaybackSpeed = settings.playbackSpeed;
 	canvas.mousePressed(() => {
@@ -27,14 +27,15 @@ function setup() {
 	for (const pl of loggers) {
 		pl.updateProximity();
 	}
-	Logger.log('\n');
 	Logger.printLogs(time);
 	nextLogTime += settings.logFrequency / 60 / 60;
+
+	windowResized();
 }
 
 function draw() {
-	translate(p5.Vector.div(settings.displaySize, 2));
-	scale(settings.displaySize.y / settings.vRange);
+	translate(p5.Vector.div(createVector(width, height), 2));
+	scale(canvas.height / settings.vRange);
 	scale(1, -1);
 
 	const deltaHours = (deltaTime / MILLIS_PER_HOUR) * settings.playbackSpeed;

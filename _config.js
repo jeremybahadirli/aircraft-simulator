@@ -1,6 +1,5 @@
 function initConfig() {
 	settings = {
-		displaySize: createVector(800, 800),
 		vRange: 100,
 		playbackSpeed: 10,
 		vectorMins: 1,

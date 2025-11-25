@@ -12,8 +12,8 @@ function drawGrid() {
 	stroke('gray');
 	strokeWeight(0.1);
 
-	const halfX = settings.displaySize.x / 2;
-	const halfY = settings.displaySize.y / 2;
+	const halfX = canvas.width / 2;
+	const halfY = canvas.height / 2;
 
 	for (let i = 0; i <= halfX; i += 10) {
 		line(i, halfY, i, -halfY);
@@ -35,7 +35,8 @@ function drawRings() {
 	strokeWeight(0.1);
 
 	const maxDiameter =
-		settings.displaySize.mag() / (settings.displaySize.y / settings.vRange);
+		createVector(canvas.width, canvas.height).mag() /
+		(canvas.height / settings.vRange);
 	for (let i = 20; i < maxDiameter; i += 20) {
 		circle(0, 0, i);
 	}
@@ -44,6 +45,7 @@ function drawRings() {
 
 function drawWind(wind) {
 	push();
+
 	fill('white');
 	strokeWeight(0);
 

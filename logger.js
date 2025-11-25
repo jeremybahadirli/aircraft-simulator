@@ -70,7 +70,7 @@ class Logger {
 
 	static log(...args) {
 		const msg = args.join(' ');
-		logLines.push(msg);
+		logLines.push('  ' + msg);
 		if (logLines.length > MAX_LOG_LINES) {
 			logLines.shift();
 		}
@@ -80,7 +80,7 @@ class Logger {
 	static flushLog() {
 		if (!logDirty) return;
 		logDiv.elt.textContent = logLines.join('\n');
-		consoleContainer.elt.scrollTop = consoleContainer.elt.scrollHeight;
+		logDiv.elt.scrollTop = logDiv.elt.scrollHeight;
 		logDirty = false;
 	}
 }
