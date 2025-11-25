@@ -36,8 +36,8 @@ class Logger {
 	}
 
 	static printLogs(hours) {
-		const minutes = floor(hours * 60);
-		const seconds = floor((hours * 60 * 60) % 60)
+		const minutes = Math.trunc(hours * 60);
+		const seconds = Math.trunc((hours * 60 * 60) % 60)
 			.toString()
 			.padStart(2, '0');
 		Logger.log(`Time: ${minutes}m ${seconds}s`);
