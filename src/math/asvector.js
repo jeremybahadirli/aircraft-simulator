@@ -30,7 +30,9 @@ export class ASVector extends p5.Vector {
 
 	static fromAngle(headingDeg, magnitude = 1) {
 		if (Number.isNaN(magnitude) || !Number.isFinite(magnitude)) {
-			haltWithError(`Could not create vector with magnitude: ${magnitude}`);
+			haltWithError(
+				`Could not create vector with magnitude: ${magnitude}`
+			);
 		}
 
 		const v = new ASVector(1, 0);

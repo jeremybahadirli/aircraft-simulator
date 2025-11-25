@@ -8,7 +8,10 @@ export function createUI() {
 		.style('position', 'relative');
 	uiState.logDiv = createDiv()
 		.style('width', '100%')
-		.style('height', `${simState.aircraftList.length + simState.loggers.length + 3}lh`)
+		.style(
+			'height',
+			`${simState.aircraftList.length + simState.loggers.length + 3}lh`
+		)
 		.style('white-space', 'pre')
 		.style('overflow', 'auto')
 		.style('color', '#ccc')

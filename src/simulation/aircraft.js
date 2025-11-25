@@ -1,9 +1,6 @@
 import { simState } from '../core/state.js';
 import { ASVector } from '../math/asvector.js';
-import {
-	createVelocityDirect,
-	createVelocityOnTrack,
-} from './utils.js';
+import { createVelocityDirect, createVelocityOnTrack } from './utils.js';
 
 export class Aircraft {
 	constructor({ pos, vel, halo = false, color = 'yellow' }) {
