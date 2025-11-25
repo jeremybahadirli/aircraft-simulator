@@ -30,6 +30,10 @@ function setup() {
 	Logger.printLogs(time);
 	nextLogTime += settings.logFrequency / 60 / 60;
 
+	for (const e of events) {
+		e.armed = e.active;
+	}
+
 	windowResized();
 }
 
@@ -41,25 +45,30 @@ function draw() {
 	const deltaHours = (deltaTime / MILLIS_PER_HOUR) * settings.playbackSpeed;
 	const nextTime = time + deltaHours;
 
-	for (const event of events) {
-		if (event.active && event.trigger()) {
-			event.actions();
-			event.active = false;
+	if (settings.playbackSpeed !== 0) {
+		for (const event of events) {
+			if (event.armed && event.trigger()) {
+				event.armed = false;
+				event.actions(deltaHours);
+				for (const logger of loggers) {
+					logger.updateCalculated();
+				}
+			}
 		}
-	}
 
-	for (const ac of aircraftList) {
-		ac.updateGroundTrack();
-		ac.updatePosition(deltaHours);
-	}
+		for (const ac of aircraftList) {
+			ac.updateGroundTrack();
+			ac.updatePosition(deltaHours);
+		}
 
-	for (const pl of loggers) {
-		pl.updateProximity();
-	}
+		for (const pl of loggers) {
+			pl.updateProximity();
+		}
 
-	if (settings.playbackSpeed !== 0 && nextTime >= nextLogTime) {
-		Logger.printLogs(nextTime);
-		nextLogTime += settings.logFrequency / 60 / 60;
+		if (nextTime >= nextLogTime) {
+			Logger.printLogs(nextTime);
+			nextLogTime += settings.logFrequency / 60 / 60;
+		}
 	}
 
 	drawCanvas();
