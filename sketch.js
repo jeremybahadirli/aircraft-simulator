@@ -65,7 +65,7 @@ function draw() {
 			pl.updateProximity();
 		}
 
-		if (nextTime !== nextLogTime) {
+		if (nextTime >= nextLogTime) {
 			printLogs(nextTime);
 			nextLogTime += settings.logFrequency / 60 / 60;
 		}
