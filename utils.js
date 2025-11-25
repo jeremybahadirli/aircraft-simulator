@@ -20,6 +20,17 @@ function createVelocityDirect(fix, pos, TAS, wind) {
 	return createVelocityOnTrack(directVector.asHeading(), TAS, wind);
 }
 
+function autoPosition(ac1, ac2) {
+	aircraftList[1] = Aircraft.onHeading({
+		pos: ASVector.fromAngle(
+			180,
+			5 / sin(-ac2.trk.copy().sub(ac1.trk).asHeading())
+		),
+		heading: ac2.vel.asHeading(),
+		TAS: ac2.vel.mag(),
+	});
+}
+
 function closestApproach(ac1, ac2) {
 	const p1 = ac1.pos;
 	const v1 = ac1.vel;
