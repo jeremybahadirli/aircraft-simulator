@@ -18,3 +18,10 @@ export const uiState = {
 	gridCheckbox: null,
 	ringsCheckbox: null,
 };
+
+export function resetRuntimeState() {
+	simState.time = 0;
+	simState.nextLogTime = 0;
+	simState.logLines = ['\n'];
+	simState.logDirty = false;
+}

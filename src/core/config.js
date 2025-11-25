@@ -1,14 +1,9 @@
 import { ASVector } from '../math/asvector.js';
 import { Aircraft } from '../simulation/aircraft.js';
 import { Wind } from '../simulation/wind.js';
-import { simState } from './state.js';
+import { simState, resetRuntimeState } from './state.js';
 
 export function initConfig() {
-	simState.time = 0;
-	simState.nextLogTime = 0;
-	simState.logLines = [];
-	simState.logDirty = false;
-
 	simState.settings = {
 		vRange: 100,
 		playbackSpeed: 1,
@@ -41,4 +36,6 @@ export function initConfig() {
 			actions: () => {},
 		},
 	];
+
+	resetRuntimeState();
 }

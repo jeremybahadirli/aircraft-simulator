@@ -16,7 +16,6 @@ function setup() {
 	angleMode(DEGREES);
 
 	initConfig();
-	stageLog('\n');
 	createUI();
 	uiState.canvas = createCanvas().parent(uiState.canvasDiv);
 
@@ -85,7 +84,7 @@ function draw() {
 		drawAircraft(ac);
 	}
 
-	simState.time = nextTime;
+	simState.time = simState.time + deltaHours;
 }
 
 function windowResized() {
