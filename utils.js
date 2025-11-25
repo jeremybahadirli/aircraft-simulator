@@ -51,5 +51,5 @@ function closestApproach(ac1, ac2) {
 
 function error(msg) {
 	frameRate(0);
-	Logger.log(msg);
+	stageLog(msg);
 }

@@ -27,7 +27,7 @@ function initConfig() {
 		}),
 	];
 
-	loggers = [new Logger(0, 1)];
+	loggers = [new Proximity(0, 1)];
 
 	events = [
 		{

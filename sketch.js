@@ -9,7 +9,7 @@ let logDirty = false;
 
 function setup() {
 	angleMode(DEGREES);
-	Logger.log('\n');
+	stageLog('\n');
 
 	initConfig();
 	createUI();
@@ -27,7 +27,7 @@ function setup() {
 	for (const pl of loggers) {
 		pl.updateProximity();
 	}
-	Logger.printLogs(time);
+	printLogs(time);
 	nextLogTime += settings.logFrequency / 60 / 60;
 
 	for (const e of events) {
@@ -66,7 +66,7 @@ function draw() {
 		}
 
 		if (nextTime !== nextLogTime) {
-			Logger.printLogs(nextTime);
+			printLogs(nextTime);
 			nextLogTime += settings.logFrequency / 60 / 60;
 		}
 	}
