@@ -6,8 +6,7 @@ function createVelocityOnTrack(track, TAS, wind) {
 
 	const alongTrackTAS = sqrt(TAS ** 2 - crosswind ** 2);
 	if (Number.isNaN(alongTrackTAS)) {
-		print('Aircraft cannot maintain assigned track.');
-		throw Error;
+		error('Aircraft cannot maintain assigned track.');
 	}
 	const groundSpeed = alongTrackTAS + tailwind;
 
@@ -19,4 +18,9 @@ function createVelocityOnTrack(track, TAS, wind) {
 function createVelocityDirect(fix, pos, TAS, wind) {
 	const directVector = p5.Vector.sub(fix, pos);
 	return createVelocityOnTrack(directVector.asHeading(), TAS, wind);
+}
+
+function error(msg) {
+	frameRate(0);
+	Logger.log(msg);
 }

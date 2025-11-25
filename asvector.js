@@ -27,6 +27,10 @@ class ASVector extends p5.Vector {
 	}
 
 	static fromAngle(headingDeg, magnitude = 1) {
+		if (Number.isNaN(magnitude) || !Number.isFinite(magnitude)) {
+			error(`Could not create vector with magnitude: ${magnitude}`);
+		}
+
 		let v = new ASVector(1, 0);
 		v.setASHeading(headingDeg);
 		v.setMag(magnitude);
