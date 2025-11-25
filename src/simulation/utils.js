@@ -1,4 +1,8 @@
-function createVelocityOnTrack(track, TAS, wind) {
+import { haltWithError } from '../core/errors.js';
+import { simState } from '../core/state.js';
+import { ASVector } from '../math/asvector.js';
+
+export function createVelocityOnTrack(track, TAS, wind = simState.wind) {
 	const groundUnitVector = ASVector.fromAngle(track);
 
 	const crosswind = p5.Vector.cross(groundUnitVector, wind.vel).z;
@@ -6,7 +10,7 @@ function createVelocityOnTrack(track, TAS, wind) {
 
 	const alongTrackTAS = sqrt(TAS ** 2 - crosswind ** 2);
 	if (Number.isNaN(alongTrackTAS)) {
-		error('Aircraft cannot maintain assigned track.');
+		haltWithError('Aircraft cannot maintain assigned track.');
 	}
 	const groundSpeed = alongTrackTAS + tailwind;
 
@@ -15,23 +19,12 @@ function createVelocityOnTrack(track, TAS, wind) {
 	return airVector;
 }
 
-function createVelocityDirect(fix, pos, TAS, wind) {
+export function createVelocityDirect(fix, pos, TAS, wind = simState.wind) {
 	const directVector = p5.Vector.sub(fix, pos);
 	return createVelocityOnTrack(directVector.asHeading(), TAS, wind);
 }
 
-function autoPosition(ac1, ac2) {
-	aircraftList[1] = Aircraft.onHeading({
-		pos: ASVector.fromAngle(
-			180,
-			5 / sin(-ac2.trk.copy().sub(ac1.trk).asHeading())
-		),
-		heading: ac2.vel.asHeading(),
-		TAS: ac2.vel.mag(),
-	});
-}
-
-function closestApproach(ac1, ac2) {
+export function closestApproach(ac1, ac2) {
 	const relativePosition = p5.Vector.sub(ac2.pos, ac1.pos);
 	const relativeVelocity = p5.Vector.sub(ac2.vel, ac1.vel);
 
@@ -46,9 +39,4 @@ function closestApproach(ac1, ac2) {
 	const closestP2 = p5.Vector.add(ac2.pos, p5.Vector.mult(ac2.vel, t));
 
 	return p5.Vector.dist(closestP1, closestP2);
-}
-
-function error(msg) {
-	frameRate(0);
-	stageLog(msg);
 }

@@ -1,4 +1,6 @@
-function drawCanvas() {
+import { simState, uiState } from '../core/state.js';
+
+export function drawCanvas() {
 	push();
 	background('black');
 	stroke('gray');
@@ -7,13 +9,13 @@ function drawCanvas() {
 	pop();
 }
 
-function drawGrid() {
+export function drawGrid() {
 	push();
 	stroke('gray');
 	strokeWeight(0.1);
 
-	const halfX = canvas.width / 2;
-	const halfY = canvas.height / 2;
+	const halfX = uiState.canvas.width / 2;
+	const halfY = uiState.canvas.height / 2;
 
 	for (let i = 0; i <= halfX; i += 10) {
 		line(i, halfY, i, -halfY);
@@ -28,28 +30,28 @@ function drawGrid() {
 	pop();
 }
 
-function drawRings() {
+export function drawRings() {
 	push();
 	noFill();
 	stroke('gray');
 	strokeWeight(0.1);
 
 	const maxDiameter =
-		createVector(canvas.width, canvas.height).mag() /
-		(canvas.height / settings.vRange);
+		createVector(uiState.canvas.width, uiState.canvas.height).mag() /
+		(uiState.canvas.height / simState.settings.vRange);
 	for (let i = 20; i < maxDiameter; i += 20) {
 		circle(0, 0, i);
 	}
 	pop();
 }
 
-function drawWind(wind) {
+export function drawWind(wind) {
 	push();
 
 	fill('white');
 	strokeWeight(0);
 
-	translate(0, settings.vRange / 2 - 5);
+	translate(0, simState.settings.vRange / 2 - 5);
 
 	push();
 	scale(1, -1);
@@ -65,7 +67,7 @@ function drawWind(wind) {
 	pop();
 }
 
-function drawAircraft(ac) {
+export function drawAircraft(ac) {
 	push();
 
 	translate(ac.pos);
@@ -80,7 +82,7 @@ function drawAircraft(ac) {
 	pop();
 
 	// Draw vector line
-	const vectorLineExtent = (ac.trk.mag() / 60) * settings.vectorMins;
+	const vectorLineExtent = (ac.trk.mag() / 60) * simState.settings.vectorMins;
 	if (vectorLineExtent >= 1.5) {
 		push();
 		strokeWeight(0.25);

@@ -1,4 +1,7 @@
-class Proximity {
+import { simState } from '../core/state.js';
+import { closestApproach } from './utils.js';
+
+export class Proximity {
 	constructor(ac1, ac2) {
 		this.ac1 = ac1;
 		this.ac2 = ac2;
@@ -11,8 +14,8 @@ class Proximity {
 	updateProximity() {
 		this.previousProximity = this.proximity;
 		this.proximity = p5.Vector.dist(
-			aircraftList[this.ac1].pos,
-			aircraftList[this.ac2].pos
+			simState.aircraftList[this.ac1].pos,
+			simState.aircraftList[this.ac2].pos
 		);
 
 		if (this.proximity < this.previousProximity) {
@@ -30,8 +33,8 @@ class Proximity {
 
 	updateCalculated() {
 		this.lowestCalculated = closestApproach(
-			aircraftList[this.ac1],
-			aircraftList[this.ac2]
+			simState.aircraftList[this.ac1],
+			simState.aircraftList[this.ac2]
 		);
 	}
 }

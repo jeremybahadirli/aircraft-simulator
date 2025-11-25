@@ -1,10 +1,17 @@
-class Aircraft {
+import { simState } from '../core/state.js';
+import { ASVector } from '../math/asvector.js';
+import {
+	createVelocityDirect,
+	createVelocityOnTrack,
+} from './utils.js';
+
+export class Aircraft {
 	constructor({ pos, vel, halo = false, color = 'yellow' }) {
 		this.pos = pos;
 		this.vel = vel;
 		this.halo = halo;
 		this.color = color;
-		this.trk = p5.Vector.add(this.vel, wind.vel);
+		this.trk = p5.Vector.add(this.vel, simState.wind.vel);
 	}
 
 	static onHeading({ pos, heading, TAS, halo, color }) {
@@ -19,7 +26,7 @@ class Aircraft {
 	static onTrack({ pos, track, TAS, halo, color }) {
 		return new Aircraft({
 			pos,
-			vel: createVelocityOnTrack(track, TAS, wind),
+			vel: createVelocityOnTrack(track, TAS),
 			halo,
 			color,
 		});
@@ -28,7 +35,7 @@ class Aircraft {
 	static direct({ pos, fix, TAS, halo, color }) {
 		return new Aircraft({
 			pos,
-			vel: createVelocityDirect(fix, pos, TAS, wind),
+			vel: createVelocityDirect(fix, pos, TAS),
 			halo,
 			color,
 		});
@@ -37,14 +44,17 @@ class Aircraft {
 	static stationary({ pos, halo, color }) {
 		return new Aircraft({
 			pos,
-			vel: ASVector.fromAngle(wind.vel.asHeading() + 180, wind.vel.mag()),
+			vel: ASVector.fromAngle(
+				simState.wind.vel.asHeading() + 180,
+				simState.wind.vel.mag()
+			),
 			halo,
 			color,
 		});
 	}
 
 	updateGroundTrack() {
-		this.trk = p5.Vector.add(this.vel, wind.vel);
+		this.trk = p5.Vector.add(this.vel, simState.wind.vel);
 	}
 
 	updatePosition(hours) {

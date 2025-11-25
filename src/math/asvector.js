@@ -1,4 +1,6 @@
-class ASVector extends p5.Vector {
+import { haltWithError } from '../core/errors.js';
+
+export class ASVector extends p5.Vector {
 	constructor(x = 0, y = 0, z = 0) {
 		super(x, y, z);
 	}
@@ -28,10 +30,10 @@ class ASVector extends p5.Vector {
 
 	static fromAngle(headingDeg, magnitude = 1) {
 		if (Number.isNaN(magnitude) || !Number.isFinite(magnitude)) {
-			error(`Could not create vector with magnitude: ${magnitude}`);
+			haltWithError(`Could not create vector with magnitude: ${magnitude}`);
 		}
 
-		let v = new ASVector(1, 0);
+		const v = new ASVector(1, 0);
 		v.setASHeading(headingDeg);
 		v.setMag(magnitude);
 		return v;
