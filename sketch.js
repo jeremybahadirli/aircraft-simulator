@@ -49,7 +49,7 @@ function draw() {
 		for (const event of events) {
 			if (event.armed && event.trigger()) {
 				event.armed = false;
-				event.actions(deltaHours);
+				event.actions();
 				for (const logger of loggers) {
 					logger.updateCalculated();
 				}

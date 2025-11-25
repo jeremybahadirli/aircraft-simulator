@@ -32,32 +32,20 @@ function autoPosition(ac1, ac2) {
 }
 
 function closestApproach(ac1, ac2) {
-	const p1 = ac1.pos;
-	const v1 = ac1.vel;
-	const p2 = ac2.pos;
-	const v2 = ac2.vel;
+	const relativePosition = p5.Vector.sub(ac2.pos, ac1.pos);
+	const relativeVelocity = p5.Vector.sub(ac2.vel, ac1.vel);
 
-	const relativePosition = p5.Vector.sub(p2, p1);
-	const relativeVelocity = p5.Vector.sub(v2, v1);
+	if (relativeVelocity.mag() === 0) return relativePosition.mag();
 
-	if (relativeVelocity.magSq() === 0) {
-		return {
-			t: 0,
-			d: relativePosition.mag(),
-		};
-	}
+	const t = max(
+		-relativePosition.dot(relativeVelocity) / relativeVelocity.magSq(),
+		0
+	);
 
-	let t = -relativePosition.dot(relativeVelocity) / relativeVelocity.magSq();
+	const closestP1 = p5.Vector.add(ac1.pos, p5.Vector.mult(ac1.vel, t));
+	const closestP2 = p5.Vector.add(ac2.pos, p5.Vector.mult(ac2.vel, t));
 
-	if (t < 0) t = 0;
-
-	const p1At = p5.Vector.add(p1, p5.Vector.mult(v1, t));
-	const p2At = p5.Vector.add(p2, p5.Vector.mult(v2, t));
-
-	return {
-		t,
-		d: p5.Vector.dist(p1At, p2At),
-	};
+	return p5.Vector.dist(closestP1, closestP2);
 }
 
 function error(msg) {

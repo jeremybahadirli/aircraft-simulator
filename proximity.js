@@ -15,23 +15,23 @@ class Proximity {
 			aircraftList[this.ac2].pos
 		);
 
-		if (this.proximity > this.previousProximity) {
-			this.lowestProximity = min(
+		if (this.proximity < this.previousProximity) {
+			this.lowestProximity = Math.min(
+				this.lowestProximity,
+				this.proximity
+			);
+		} else {
+			this.lowestProximity = Math.min(
 				this.lowestProximity,
 				this.lowestCalculated
 			);
-		} else {
-			this.lowestProximity = min(this.lowestProximity, this.proximity);
 		}
 	}
 
 	updateCalculated() {
 		this.lowestCalculated = closestApproach(
 			aircraftList[this.ac1],
-			aircraftList[this.ac2],
-			{
-				clampToFuture: true,
-			}
-		).d;
+			aircraftList[this.ac2]
+		);
 	}
 }
