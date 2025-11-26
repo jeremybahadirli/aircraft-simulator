@@ -1,5 +1,6 @@
 import { ASVector } from '../math/asvector.js';
 import { Aircraft } from '../simulation/aircraft.js';
+import { Proximity } from '../simulation/proximity.js';
 import { Wind } from '../simulation/wind.js';
 import { simState, resetRuntimeState } from './state.js';
 
@@ -27,7 +28,7 @@ export function initConfig() {
 		}),
 	];
 
-	simState.loggers = [];
+	simState.loggers = [Proximity.create(0, 1), Proximity.create(0, 2)];
 
 	simState.events = [
 		{

@@ -24,4 +24,6 @@ export function resetRuntimeState() {
 	simState.nextLogTime = 0;
 	simState.logLines = ['\n'];
 	simState.logDirty = false;
+
+	simState.loggers = simState.loggers.filter(Boolean);
 }

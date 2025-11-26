@@ -11,6 +11,22 @@ export class Proximity {
 		this.updateCalculated();
 	}
 
+	static create(ac1, ac2) {
+		const allValidAircraft = (...idx) =>
+			idx.every(
+				(i) =>
+					Number.isInteger(i) &&
+					i >= 0 &&
+					i < simState.aircraftList.length
+			);
+
+		if (allValidAircraft(ac1, ac2)) {
+			return new Proximity(ac1, ac2);
+		} else {
+			return null;
+		}
+	}
+
 	updateProximity() {
 		this.previousProximity = this.proximity;
 		this.proximity = p5.Vector.dist(

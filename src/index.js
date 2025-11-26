@@ -8,7 +8,7 @@ import {
 	drawRings,
 	drawWind,
 } from './render/drawing.js';
-import { printLogs, stageLog } from './logging/logging.js';
+import { printLogs } from './logging/logging.js';
 import { autoPosition } from './simulation/positioning.js';
 import { createUI, handleWindowResized } from './ui/ui.js';
 
@@ -18,6 +18,7 @@ function setup() {
 	initConfig();
 	createUI();
 	uiState.canvas = createCanvas().parent(uiState.canvasDiv);
+	handleWindowResized();
 
 	const defaultPlaybackSpeed = simState.settings.playbackSpeed;
 	uiState.canvas.mousePressed(() => {
@@ -31,14 +32,13 @@ function setup() {
 	for (const pl of simState.loggers) {
 		pl.updateProximity();
 	}
-	printLogs(simState.time);
-	simState.nextLogTime += simState.settings.logFrequency / 60 / 60;
 
 	for (const e of simState.events) {
 		e.armed = e.active;
 	}
 
-	handleWindowResized();
+	printLogs(simState.time);
+	simState.nextLogTime += simState.settings.logFrequency / 60 / 60;
 }
 
 function draw() {
