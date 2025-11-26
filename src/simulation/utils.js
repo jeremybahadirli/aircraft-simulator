@@ -1,3 +1,4 @@
+import { MAX_DIGITS } from '../core/constants.js';
 import { haltWithError } from '../core/errors.js';
 import { simState } from '../core/state.js';
 import { ASVector } from '../math/asvector.js';
@@ -39,4 +40,30 @@ export function closestApproach(ac1, ac2) {
 	const closestP2 = p5.Vector.add(ac2.pos, p5.Vector.mult(ac2.vel, t));
 
 	return p5.Vector.dist(closestP1, closestP2);
+}
+
+export function formatNumber(n, preferredDecimals = 0, leadingZeroes = 0) {
+	if (!Number.isFinite(n)) return String(n);
+
+	let [intPart, fracPart = ''] = abs(n).toFixed(preferredDecimals).split('.');
+	intPart = intPart.padStart(leadingZeroes, '0');
+
+	const maxDecimals = Math.max(0, MAX_DIGITS - intPart.length);
+	const cappedDecimals = Math.min(preferredDecimals, maxDecimals);
+
+	if (cappedDecimals !== preferredDecimals) {
+		[intPart, fracPart = ''] = abs(n).toFixed(cappedDecimals).split('.');
+		intPart = intPart.padStart(leadingZeroes, '0');
+	} else {
+		fracPart = fracPart.slice(0, cappedDecimals);
+	}
+
+	const formatted =
+		(n < 0 ? '-' : '') +
+		intPart +
+		(cappedDecimals > 0 ? '.' + fracPart : '');
+
+	const isExact = Number(formatted) === n;
+
+	return { n: formatted, isExact: isExact };
 }

@@ -1,5 +1,6 @@
 import { MAX_LOG_LINES } from '../core/constants.js';
 import { simState, uiState } from '../core/state.js';
+import { formatNumber } from '../simulation/utils.js';
 
 export function printLogs(hours) {
 	const minutes = Math.trunc(hours * 60);
@@ -8,47 +9,44 @@ export function printLogs(hours) {
 		.padStart(2, '0');
 	stageLog(`Time: ${minutes}m ${seconds}s`);
 	for (const [i, ac] of simState.aircraftList.entries()) {
-		const hdgString = ac.vel
-			.asHeading()
-			.toFixed(simState.settings.statsDecimalPlaces)
-			.padStart(
-				simState.settings.statsDecimalPlaces === 0
-					? 3
-					: 4 + simState.settings.statsDecimalPlaces,
-				'0'
-			);
-		const trkString = ac.trk
-			.asHeading()
-			.toFixed(simState.settings.statsDecimalPlaces)
-			.padStart(
-				simState.settings.statsDecimalPlaces === 0
-					? 3
-					: 4 + simState.settings.statsDecimalPlaces,
-				'0'
-			);
-		const gsString = ac.trk
-			.mag()
-			.toFixed(simState.settings.statsDecimalPlaces);
+		const hdgFormatted = formatNumber(
+			ac.vel.asHeading(),
+			simState.settings.statsDecimalPlaces,
+			3
+		);
+		const trkFormatted = formatNumber(
+			ac.trk.asHeading(),
+			simState.settings.statsDecimalPlaces,
+			3
+		);
+		const gsFormatted = formatNumber(
+			ac.trk.mag(),
+			simState.settings.statsDecimalPlaces
+		);
 		stageLog(
 			`Aircraft ${i}:\t` +
-				`hdg = ${hdgString}°\t` +
-				`trk = ${trkString}°\t` +
-				`gs = ${gsString} KT`
+				`hdg ${hdgFormatted.isExact ? '=' : '≈'} ${hdgFormatted.n}°\t` +
+				`trk ${trkFormatted.isExact ? '=' : '≈'} ${trkFormatted.n}°\t` +
+				`gs ${gsFormatted.isExact ? '=' : '≈'} ${gsFormatted.n} KT`
 		);
 	}
 	for (const pl of simState.loggers) {
-		const proximityString = round(
+		const proximityFormatted = formatNumber(
 			pl.proximity,
 			simState.settings.proximityDecimalPlaces
-		).toFixed(simState.settings.proximityDecimalPlaces);
-		const lowestProximityString = round(
+		);
+		const lowestProximityFormatted = formatNumber(
 			pl.lowestProximity,
 			simState.settings.proximityDecimalPlaces
-		).toFixed(simState.settings.proximityDecimalPlaces);
+		);
 		stageLog(
 			`Aircraft ${pl.ac1}-${pl.ac2}:\t` +
-				`proximity = ${proximityString} NM\t` +
-				`nearest = ${lowestProximityString} NM`
+				`proximity ${proximityFormatted.isExact ? '=' : '≈'} ${
+					proximityFormatted.n
+				} NM\t` +
+				`nearest ${lowestProximityFormatted.isExact ? '=' : '≈'} ${
+					lowestProximityFormatted.n
+				} NM`
 		);
 	}
 	stageLog('\n');
