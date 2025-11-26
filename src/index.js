@@ -70,7 +70,7 @@ function draw() {
 			pl.updateProximity();
 		}
 
-		if (nextTime >= simState.nextLogTime) {
+		if (abs(nextTime) >= simState.nextLogTime) {
 			printLogs(nextTime);
 			simState.nextLogTime += simState.settings.logFrequency / 60 / 60;
 		}

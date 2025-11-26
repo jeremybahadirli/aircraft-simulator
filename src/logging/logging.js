@@ -3,50 +3,49 @@ import { simState, uiState } from '../core/state.js';
 import { formatNumber } from '../simulation/utils.js';
 
 export function printLogs(hours) {
-	const minutes = Math.trunc(hours * 60);
-	const seconds = Math.trunc((hours * 60 * 60) % 60)
-		.toString()
-		.padStart(2, '0');
-	stageLog(`Time: ${minutes}m ${seconds}s`);
+	const m = Math.trunc(hours * 60);
+	const s = Math.trunc((hours * 60 * 60) % 60);
+	const sStr = (s < 0 ? '-' : '') + abs(s).toString().padStart(2, '0');
+	stageLog(`Time: ${m}m ${sStr}s`);
 	for (const [i, ac] of simState.aircraftList.entries()) {
-		const hdgFormatted = formatNumber(
+		const hdgStr = formatNumber(
 			ac.vel.asHeading(),
 			simState.settings.statsDecimalPlaces,
 			3
 		);
-		const trkFormatted = formatNumber(
+		const trkStr = formatNumber(
 			ac.trk.asHeading(),
 			simState.settings.statsDecimalPlaces,
 			3
 		);
-		const gsFormatted = formatNumber(
+		const gsStr = formatNumber(
 			ac.trk.mag(),
 			simState.settings.statsDecimalPlaces
 		);
 		stageLog(
-			`Aircraft ${i}:\t` +
-				`hdg ${hdgFormatted.isExact ? '=' : '≈'} ${hdgFormatted.n}°\t` +
-				`trk ${trkFormatted.isExact ? '=' : '≈'} ${trkFormatted.n}°\t` +
-				`gs ${gsFormatted.isExact ? '=' : '≈'} ${gsFormatted.n} KT`
+			`Aircraft ${i}:\t`,
+			`hdg ${hdgStr.isExact ? '=' : '≈'} ${hdgStr.n}°\t`,
+			`trk ${trkStr.isExact ? '=' : '≈'} ${trkStr.n}°\t`,
+			`gs ${gsStr.isExact ? '=' : '≈'} ${gsStr.n} KT`
 		);
 	}
 	for (const pl of simState.loggers) {
-		const proximityFormatted = formatNumber(
+		const proximityStr = formatNumber(
 			pl.proximity,
 			simState.settings.proximityDecimalPlaces
 		);
-		const lowestProximityFormatted = formatNumber(
+		const lowestProximityStr = formatNumber(
 			pl.lowestProximity,
 			simState.settings.proximityDecimalPlaces
 		);
 		stageLog(
-			`Aircraft ${pl.ac1}-${pl.ac2}:\t` +
-				`proximity ${proximityFormatted.isExact ? '=' : '≈'} ${
-					proximityFormatted.n
-				} NM\t` +
-				`nearest ${lowestProximityFormatted.isExact ? '=' : '≈'} ${
-					lowestProximityFormatted.n
-				} NM`
+			`Aircraft ${pl.ac1}-${pl.ac2}:\t`,
+			`proximity ${proximityStr.isExact ? '=' : '≈'} ${
+				proximityStr.n
+			} NM\t`,
+			`nearest ${lowestProximityStr.isExact ? '=' : '≈'} ${
+				lowestProximityStr.n
+			} NM`
 		);
 	}
 	stageLog('\n');
@@ -54,7 +53,7 @@ export function printLogs(hours) {
 }
 
 export function stageLog(...args) {
-	const msg = args.join(' ');
+	const msg = args.join('');
 	simState.logLines.push('  ' + msg);
 	if (simState.logLines.length > MAX_LOG_LINES) {
 		simState.logLines.shift();
