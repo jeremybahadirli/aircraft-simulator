@@ -34,6 +34,7 @@ export class Proximity {
 			simState.aircraftList[this.ac2].pos
 		);
 
+		if (this.proximity < this.lowestCalculated) return;
 		if (this.proximity < this.previousProximity) {
 			this.lowestProximity = Math.min(
 				this.lowestProximity,
