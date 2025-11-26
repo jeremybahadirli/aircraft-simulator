@@ -10,5 +10,7 @@ export function autoPosition(ac1, ac2) {
 		),
 		heading: ac2.vel.asHeading(),
 		TAS: ac2.vel.mag(),
+		halo: ac2.halo,
+		color: ac2.color,
 	});
 }
