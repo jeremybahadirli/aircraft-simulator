@@ -3,13 +3,15 @@ import { ASVector } from '../math/asvector.js';
 import { Aircraft } from './aircraft.js';
 
 export function autoPosition(ac1, ac2) {
-	simState.aircraftList[1] = Aircraft.onHeading({
+	// Intuitive formula: Math.abs(5 / sin(p5.Vector.sub(ac2.trk, ac1.trk).asHeading()))
+	// Replace abs with %180 to eliminate floating-point error at 90º
+
+	simState.aircraftList[1] = new Aircraft({
 		pos: ASVector.fromAngle(
 			180,
-			5 / sin(-ac2.trk.copy().sub(ac1.trk).asHeading())
+			5 / sin(p5.Vector.sub(ac2.trk, ac1.trk).asHeading() % 180)
 		),
-		heading: ac2.vel.asHeading(),
-		TAS: ac2.vel.mag(),
+		vel: ac2.vel,
 		halo: ac2.halo,
 		color: ac2.color,
 	});
