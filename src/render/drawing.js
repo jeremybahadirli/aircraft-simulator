@@ -65,7 +65,7 @@ export function drawWind(wind) {
 	pop();
 
 	push();
-	rotate(-wind.vel.asHeading());
+	rotate(-wind.vel.asHeading()); // p5 positive rotation -> ccw
 	triangle(-1, 0, 1, 0, 0, 5);
 	pop();
 
@@ -76,7 +76,7 @@ export function drawAircraft(ac) {
 	push();
 
 	translate(ac.pos);
-	rotate(-ac.trk.asHeading());
+	rotate(-ac.trk.asHeading()); // p5 positive rotation -> ccw
 	fill(ac.color);
 	stroke(ac.color);
 
