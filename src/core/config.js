@@ -10,7 +10,7 @@ export function initConfig() {
 
 	simState.settings = {
 		vRange: 100,
-		playbackSpeed: 1,
+		playbackSpeed: 10,
 		vectorMins: 1,
 		logFrequency: 0,
 		statsDecimalPlaces: 0,
@@ -25,9 +25,14 @@ export function initConfig() {
 	simState.aircraftList = [
 		Aircraft.onHeading({
 			pos: ASVector.fromAngle(90, 0),
-			heading: 0,
+			heading: 90,
 			TAS: 300,
 			halo: true,
+		}),
+		Aircraft.onHeading({
+			pos: ASVector.fromAngle(0, 0),
+			heading: 0,
+			TAS: 300,
 		}),
 	];
 
