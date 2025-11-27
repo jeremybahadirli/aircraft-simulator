@@ -14,8 +14,8 @@ export function drawGrid() {
 	stroke('gray');
 	strokeWeight(0.1);
 
-	const halfX = uiState.canvas.width / 2;
-	const halfY = uiState.canvas.height / 2;
+	const halfX = width / 2;
+	const halfY = height / 2;
 
 	for (let i = 0; i <= halfX; i += 10) {
 		line(i, halfY, i, -halfY);
@@ -37,8 +37,7 @@ export function drawRings() {
 	strokeWeight(0.1);
 
 	const maxDiameter =
-		createVector(uiState.canvas.width, uiState.canvas.height).mag() /
-		(uiState.canvas.height / simState.settings.vRange);
+		createVector(width, height).mag() / (height / simState.settings.vRange);
 	for (let i = 20; i < maxDiameter; i += 20) {
 		circle(0, 0, i);
 	}

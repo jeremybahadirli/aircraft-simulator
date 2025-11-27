@@ -49,8 +49,8 @@ export function formatNumber(n, preferredDecimals = 0, leadingZeroes = 0) {
 	let [intPart, fracPart = ''] = abs(n).toFixed(preferredDecimals).split('.');
 	intPart = intPart.padStart(leadingZeroes, '0');
 
-	const maxDecimals = Math.max(0, MAX_DIGITS - intPart.length);
-	const cappedDecimals = Math.min(preferredDecimals, maxDecimals);
+	const maxDecimals = max(0, MAX_DIGITS - intPart.length);
+	const cappedDecimals = min(preferredDecimals, maxDecimals);
 
 	if (cappedDecimals !== preferredDecimals) {
 		[intPart, fracPart = ''] = abs(n).toFixed(cappedDecimals).split('.');

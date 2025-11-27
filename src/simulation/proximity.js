@@ -36,12 +36,9 @@ export class Proximity {
 
 		if (this.proximity < this.lowestCalculated) return;
 		if (this.proximity < this.previousProximity) {
-			this.lowestProximity = Math.min(
-				this.lowestProximity,
-				this.proximity
-			);
+			this.lowestProximity = min(this.lowestProximity, this.proximity);
 		} else {
-			this.lowestProximity = Math.min(
+			this.lowestProximity = min(
 				this.lowestProximity,
 				this.lowestCalculated
 			);
