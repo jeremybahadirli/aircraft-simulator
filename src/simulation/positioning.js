@@ -2,15 +2,14 @@ import { simState } from '../core/state.js';
 import { ASVector } from '../math/asvector.js';
 import { Aircraft } from './aircraft.js';
 
-export function autoPosition(ac1, ac2) {
-	// Intuitive formula: abs(5 / sin(p5.Vector.sub(ac2.trk, ac1.trk).asHeading()))
-	// Replace abs with %180 to eliminate floating-point error at 90º
+export function autoPosition(i, j) {
+	const ac1 = simState.aircraftList[i];
+	const ac2 = simState.aircraftList[j];
 
-	simState.aircraftList[1] = new Aircraft({
-		pos: ASVector.fromAngle(
-			180,
-			5 / sin(p5.Vector.sub(ac2.trk, ac1.trk).asHeading() % 180)
-		),
+	const offset = abs(5 / sin(p5.Vector.sub(ac2.trk, ac1.trk).asHeading()));
+
+	simState.aircraftList[j] = new Aircraft({
+		pos: p5.Vector.add(ac1.pos, ASVector.fromXY(0, -offset)),
 		vel: ac2.vel,
 		halo: ac2.halo,
 		color: ac2.color,
