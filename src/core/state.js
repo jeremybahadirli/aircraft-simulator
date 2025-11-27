@@ -19,11 +19,13 @@ export const uiState = {
 	ringsCheckbox: null,
 };
 
-export function resetRuntimeState() {
+export function preConfig() {
 	simState.time = 0;
 	simState.nextLogTime = 0;
 	simState.logLines = ['\n'];
 	simState.logDirty = false;
+}
 
+export function postConfig() {
 	simState.loggers = simState.loggers.filter(Boolean);
 }

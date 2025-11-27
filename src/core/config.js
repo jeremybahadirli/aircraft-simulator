@@ -1,10 +1,13 @@
 import { ASVector } from '../math/asvector.js';
 import { Aircraft } from '../simulation/aircraft.js';
+import { autoPosition } from '../simulation/positioning.js';
 import { Proximity } from '../simulation/proximity.js';
 import { Wind } from '../simulation/wind.js';
-import { simState, resetRuntimeState } from './state.js';
+import { simState, preConfig, postConfig } from './state.js';
 
 export function initConfig() {
+	preConfig();
+
 	simState.settings = {
 		vRange: 100,
 		playbackSpeed: 1,
@@ -28,6 +31,8 @@ export function initConfig() {
 		}),
 	];
 
+	autoPosition(simState.aircraftList[0], simState.aircraftList[1]);
+
 	simState.loggers = [Proximity.create(0, 1), Proximity.create(0, 2)];
 
 	simState.events = [
@@ -38,5 +43,5 @@ export function initConfig() {
 		},
 	];
 
-	resetRuntimeState();
+	postConfig();
 }
