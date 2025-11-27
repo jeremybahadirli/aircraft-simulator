@@ -8,6 +8,7 @@ export function printLogs(hours) {
 	const sStr = (s < 0 ? '-' : '') + abs(s).toString().padStart(2, '0');
 	stageLog(`Time: ${m}m ${sStr}s`);
 	for (const [i, ac] of simState.aircraftList.entries()) {
+		if (!simState.settings.logStats) break;
 		const hdgStr = formatNumber(
 			ac.vel.asHeading(),
 			simState.settings.statsDecimalPlaces,

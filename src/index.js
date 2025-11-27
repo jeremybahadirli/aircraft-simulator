@@ -38,7 +38,7 @@ function setup() {
 	}
 
 	printLogs(simState.time);
-	simState.nextLogTime += simState.settings.logFrequency / 60 / 60;
+	simState.nextLogTime += simState.settings.consoleFrequency / 60 / 60;
 }
 
 function draw() {
@@ -72,7 +72,8 @@ function draw() {
 
 		if (abs(nextTime) >= simState.nextLogTime) {
 			printLogs(nextTime);
-			simState.nextLogTime += simState.settings.logFrequency / 60 / 60;
+			simState.nextLogTime +=
+				simState.settings.consoleFrequency / 60 / 60;
 		}
 	}
 

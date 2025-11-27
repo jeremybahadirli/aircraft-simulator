@@ -10,7 +10,13 @@ export function createUI() {
 		.style('width', '100%')
 		.style(
 			'height',
-			`${simState.aircraftList.length + simState.loggers.length + 3}lh`
+			`${
+				(simState.settings.logStats
+					? simState.aircraftList.length
+					: 0) +
+				simState.loggers.length +
+				3
+			}lh`
 		)
 		.style('white-space', 'pre')
 		.style('overflow', 'auto')
