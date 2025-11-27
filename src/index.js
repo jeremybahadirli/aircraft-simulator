@@ -1,6 +1,7 @@
 import { initConfig } from './core/config.js';
 import { MILLIS_PER_HOUR } from './core/constants.js';
 import { simState, uiState } from './core/state.js';
+import { printLogs } from './logging/logging.js';
 import {
 	drawAircraft,
 	drawCanvas,
@@ -8,7 +9,6 @@ import {
 	drawRings,
 	drawWind,
 } from './render/drawing.js';
-import { printLogs } from './logging/logging.js';
 import { autoPosition } from './simulation/positioning.js';
 import { createUI, handleWindowResized } from './ui/ui.js';
 

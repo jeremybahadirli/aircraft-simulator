@@ -3,7 +3,7 @@ import { Aircraft } from '../simulation/aircraft.js';
 import { autoPosition } from '../simulation/positioning.js';
 import { Proximity } from '../simulation/proximity.js';
 import { Wind } from '../simulation/wind.js';
-import { simState, preConfig, postConfig } from './state.js';
+import { postConfig, preConfig, simState } from './state.js';
 
 export function initConfig() {
 	preConfig();
