@@ -1,8 +1,8 @@
 import { haltWithError } from '../core/errors.js';
 
 export class ASVector extends p5.Vector {
-	constructor(x = 0, y = 0, z = 0) {
-		super(x, y, z);
+	constructor(x = 0, y = 0) {
+		super(x, y);
 	}
 
 	asHeading() {
@@ -13,6 +13,25 @@ export class ASVector extends p5.Vector {
 	}
 
 	setASHeading(asHeading) {
+		const h = ((asHeading % 360) + 360) % 360;
+		const mag = this.mag();
+
+		if (h === 0) {
+			this.set(0, mag);
+		} else if (h === 90) {
+			this.set(mag, 0);
+		} else if (h === 180) {
+			this.set(0, -mag);
+		} else if (h === 270) {
+			this.set(-mag, 0);
+		} else {
+			this.setHeading(radians(90 - asHeading));
+		}
+
+		return this;
+	}
+
+	setASHeading2(asHeading) {
 		const heading = radians(90 - asHeading);
 		this.setHeading(heading);
 		return this;
@@ -25,14 +44,16 @@ export class ASVector extends p5.Vector {
 	}
 
 	static fromXY(x, y) {
+		if (!Number.isFinite(x) || !Number.isFinite(y)) {
+			haltWithError(`Could not create vector with coords: (${x}, ${y})`);
+		}
+
 		return new ASVector(x, y);
 	}
 
 	static fromAngle(headingDeg, magnitude = 1) {
-		if (Number.isNaN(magnitude) || !Number.isFinite(magnitude)) {
-			haltWithError(
-				`Could not create vector with magnitude: ${magnitude}`
-			);
+		if (!Number.isFinite(magnitude)) {
+			haltWithError(`Could not create vector with mag: ${magnitude}`);
 		}
 
 		const v = new ASVector(1, 0);
@@ -42,6 +63,6 @@ export class ASVector extends p5.Vector {
 	}
 
 	copy() {
-		return new ASVector(this.x, this.y, this.z);
+		return new ASVector(this.x, this.y);
 	}
 }

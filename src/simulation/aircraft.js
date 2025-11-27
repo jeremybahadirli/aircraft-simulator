@@ -56,6 +56,6 @@ export class Aircraft {
 
 	updatePosition(hours) {
 		const delta = p5.Vector.mult(this.trk, hours);
-		this.pos = p5.Vector.add(this.pos, delta);
+		this.pos.add(delta);
 	}
 }

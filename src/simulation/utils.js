@@ -10,13 +10,13 @@ export function createVelocityOnTrack(track, TAS, wind = simState.wind) {
 	const tailwind = p5.Vector.dot(groundUnitVector, wind.vel);
 
 	const alongTrackTAS = sqrt(TAS ** 2 - crosswind ** 2);
-	if (Number.isNaN(alongTrackTAS)) {
+	if (!Number.isFinite(alongTrackTAS)) {
 		haltWithError('Aircraft cannot maintain assigned track.');
 	}
 	const groundSpeed = alongTrackTAS + tailwind;
 
-	const groundVector = groundUnitVector.mult(groundSpeed);
-	const airVector = groundVector.sub(wind.vel);
+	const groundVector = p5.Vector.mult(groundUnitVector, groundSpeed);
+	const airVector = p5.Vector.sub(groundVector, wind.vel);
 	return airVector;
 }
 
@@ -32,7 +32,8 @@ export function closestApproach(ac1, ac2) {
 	if (relativeVelocity.mag() === 0) return relativePosition.mag();
 
 	const t = max(
-		-relativePosition.dot(relativeVelocity) / relativeVelocity.magSq(),
+		-p5.Vector.dot(relativePosition, relativeVelocity) /
+			relativeVelocity.magSq(),
 		0
 	);
 

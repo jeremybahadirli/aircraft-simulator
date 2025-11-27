@@ -42,7 +42,7 @@ function setup() {
 }
 
 function draw() {
-	translate(p5.Vector.div(createVector(width, height), 2));
+	translate(createVector(width, height).div(2));
 	scale(uiState.canvas.height / simState.settings.vRange);
 	scale(1, -1);
 
