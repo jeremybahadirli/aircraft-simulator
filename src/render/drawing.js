@@ -1,4 +1,4 @@
-import { simState, uiState } from '../core/state.js';
+import { simState } from '../core/state.js';
 
 export function drawCanvas() {
 	push();
@@ -14,14 +14,14 @@ export function drawGrid() {
 	stroke('gray');
 	strokeWeight(0.1);
 
-	const halfX = width / 2;
-	const halfY = height / 2;
+	const scale = simState.settings.vRange / height;
+	const halfX = (width * scale) / 2;
+	const halfY = (height * scale) / 2;
 
 	for (let i = 0; i <= halfX; i += 10) {
 		line(i, halfY, i, -halfY);
 		if (i !== 0) line(-i, halfY, -i, -halfY);
 	}
-
 	for (let i = 0; i <= halfY; i += 10) {
 		line(halfX, i, -halfX, i);
 		if (i !== 0) line(halfX, -i, -halfX, -i);
@@ -36,11 +36,13 @@ export function drawRings() {
 	stroke('gray');
 	strokeWeight(0.1);
 
-	const maxDiameter =
-		createVector(width, height).mag() / (height / simState.settings.vRange);
-	for (let i = 20; i < maxDiameter; i += 20) {
-		circle(0, 0, i);
+	const scale = simState.settings.vRange / height;
+	const maxRadius = (createVector(width, height).mag() * scale) / 2;
+
+	for (let i = 10; i < maxRadius; i += 10) {
+		circle(0, 0, i * 2);
 	}
+
 	pop();
 }
 
@@ -52,10 +54,14 @@ export function drawWind(wind) {
 
 	translate(0, simState.settings.vRange / 2 - 5);
 
+	const windStr = Number.isInteger(wind.vel.mag())
+		? wind.vel.mag().toString()
+		: wind.vel.mag().toFixed(simState.settings.statsDecimalPlaces);
+
 	push();
 	scale(1, -1);
 	textSize(3);
-	text(round(wind.vel.mag(), 10), -5, 6);
+	text(windStr, -5, 6);
 	pop();
 
 	push();
