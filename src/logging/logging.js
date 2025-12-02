@@ -25,9 +25,9 @@ export function printLogs(hours) {
 		);
 		stageLog(
 			`Aircraft ${i}:\t`,
-			`hdg ${hdgStr.isExact ? '=' : '≈'} ${hdgStr.n}°\t`,
-			`trk ${trkStr.isExact ? '=' : '≈'} ${trkStr.n}°\t`,
-			`gs ${gsStr.isExact ? '=' : '≈'} ${gsStr.n} KT`
+			`hdg ${hdgStr.p} ${hdgStr.n}°\t`,
+			`trk ${trkStr.p} ${trkStr.n}°\t`,
+			`gs ${gsStr.p} ${gsStr.n} KT`
 		);
 	}
 	for (const pl of simState.loggers) {
@@ -41,12 +41,8 @@ export function printLogs(hours) {
 		);
 		stageLog(
 			`Aircraft ${pl.ac1}-${pl.ac2}:\t`,
-			`proximity ${proximityStr.isExact ? '=' : '≈'} ${
-				proximityStr.n
-			} NM\t`,
-			`nearest ${lowestProximityStr.isExact ? '=' : '≈'} ${
-				lowestProximityStr.n
-			} NM`
+			`proximity ${proximityStr.p} ${proximityStr.n} NM\t`,
+			`nearest ${lowestProximityStr.p} ${lowestProximityStr.n} NM`
 		);
 	}
 	stageLog('\n');

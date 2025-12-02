@@ -64,7 +64,8 @@ export function formatNumber(n, preferredDecimals = 0, leadingZeroes = 0) {
 		intPart +
 		(cappedDecimals > 0 ? '.' + fracPart : '');
 
-	const isExact = Number(formatted) === n;
+	const precisionChar =
+		Number(formatted) === round(n, MAX_DIGITS) ? '=' : '≈';
 
-	return { n: formatted, isExact: isExact };
+	return { n: formatted, p: precisionChar };
 }
