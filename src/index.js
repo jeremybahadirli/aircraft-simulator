@@ -22,70 +22,40 @@ function setup() {
 
 	const defaultPlaybackSpeed = simState.settings.playbackSpeed;
 	uiState.canvas.mousePressed(() => {
-		if (simState.settings.playbackSpeed === 0) {
-			simState.settings.playbackSpeed = defaultPlaybackSpeed;
-		} else {
-			simState.settings.playbackSpeed = 0;
-		}
+		simState.settings.playbackSpeed =
+			simState.settings.playbackSpeed === 0 ? defaultPlaybackSpeed : 0;
 	});
 
-	for (const pl of simState.loggers) {
-		pl.updateProximity();
-	}
-
-	for (const e of simState.events) {
-		e.armed = e.active;
-	}
+	simState.events.forEach((e) => (e.armed = e.active));
+	simState.loggers.forEach((l) => l.updateProximity());
 
 	printLogs(simState.time);
-	simState.nextLogTime += simState.settings.consoleFrequency / 60 / 60;
 }
 
 function draw() {
-	translate(createVector(width, height).div(2));
-	scale(height / simState.settings.vRange);
-	scale(1, -1);
-
 	const deltaHours =
 		(deltaTime / MILLIS_PER_HOUR) * simState.settings.playbackSpeed;
 	const nextTime = simState.time + deltaHours;
 
 	if (simState.settings.playbackSpeed !== 0) {
-		for (const event of simState.events) {
-			if (event.armed && event.trigger()) {
-				event.armed = false;
-				event.actions();
-				for (const logger of simState.loggers) {
-					logger.updateCalculated();
-				}
-			}
-		}
-
-		for (const ac of simState.aircraftList) {
-			ac.updateGroundTrack();
-			ac.updatePosition(deltaHours);
-		}
-
-		for (const pl of simState.loggers) {
-			pl.updateProximity();
-		}
-
-		if (abs(nextTime) >= simState.nextLogTime) {
-			printLogs(nextTime);
-			simState.nextLogTime +=
-				simState.settings.consoleFrequency / 60 / 60;
-		}
+		simState.events
+			.filter((e) => e.armed && e.trigger())
+			.forEach((e) => {
+				e.armed = false;
+				e.actions();
+			});
+		simState.aircraftList.forEach((a) => a.updatePosition(deltaHours));
+		simState.loggers.forEach((l) => l.updateProximity());
+		printLogs(nextTime);
 	}
 
 	drawCanvas();
 	if (uiState.gridCheckbox.checked()) drawGrid();
 	if (uiState.ringsCheckbox.checked()) drawRings();
 	if (simState.wind.vel.mag() > 0) drawWind(simState.wind);
-	for (const ac of simState.aircraftList) {
-		drawAircraft(ac);
-	}
+	simState.aircraftList.forEach((a) => drawAircraft(a));
 
-	simState.time = simState.time + deltaHours;
+	simState.time = nextTime;
 }
 
 function windowResized() {

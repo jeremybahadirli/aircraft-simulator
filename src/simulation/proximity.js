@@ -8,7 +8,10 @@ export class Proximity {
 		this.proximity = Number.POSITIVE_INFINITY;
 		this.previousProximity = Number.POSITIVE_INFINITY;
 		this.lowestProximity = Number.POSITIVE_INFINITY;
-		this.updateCalculated();
+		this.lowestCalculated = closestApproach(
+			simState.aircraftList[this.ac1],
+			simState.aircraftList[this.ac2]
+		);
 	}
 
 	static create(ac1, ac2) {
@@ -33,6 +36,13 @@ export class Proximity {
 			simState.aircraftList[this.ac1].pos,
 			simState.aircraftList[this.ac2].pos
 		);
+		this.lowestCalculated = min(
+			this.lowestCalculated,
+			closestApproach(
+				simState.aircraftList[this.ac1],
+				simState.aircraftList[this.ac2]
+			)
+		);
 
 		if (this.proximity < this.lowestCalculated) return;
 		if (this.proximity < this.previousProximity) {
@@ -43,12 +53,5 @@ export class Proximity {
 				this.lowestCalculated
 			);
 		}
-	}
-
-	updateCalculated() {
-		this.lowestCalculated = closestApproach(
-			simState.aircraftList[this.ac1],
-			simState.aircraftList[this.ac2]
-		);
 	}
 }

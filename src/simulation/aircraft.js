@@ -8,7 +8,6 @@ export class Aircraft {
 		this.vel = vel;
 		this.halo = halo;
 		this.color = color;
-		this.trk = p5.Vector.add(this.vel, simState.wind.vel);
 	}
 
 	static onHeading({ pos, heading, TAS, halo, color }) {
@@ -50,8 +49,8 @@ export class Aircraft {
 		});
 	}
 
-	updateGroundTrack() {
-		this.trk = p5.Vector.add(this.vel, simState.wind.vel);
+	get trk() {
+		return p5.Vector.add(this.vel, simState.wind.vel);
 	}
 
 	updatePosition(hours) {

@@ -1,6 +1,10 @@
 import { simState } from '../core/state.js';
 
 export function drawCanvas() {
+	translate(createVector(width, height).div(2));
+	scale(height / simState.settings.vRange);
+	scale(1, -1);
+
 	push();
 	background('black');
 	stroke('gray');

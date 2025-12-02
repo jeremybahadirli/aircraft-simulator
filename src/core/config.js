@@ -12,8 +12,7 @@ export function initConfig() {
 		vRange: 100,
 		playbackSpeed: 10,
 		vectorMins: 1,
-		consoleFrequency: 0,
-		logStats: false,
+		logStats: true,
 		statsDecimalPlaces: 0,
 		proximityDecimalPlaces: 3,
 	};
