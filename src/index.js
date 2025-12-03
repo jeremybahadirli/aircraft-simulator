@@ -52,7 +52,7 @@ function draw() {
 	drawCanvas();
 	if (uiState.gridCheckbox.checked()) drawGrid();
 	if (uiState.ringsCheckbox.checked()) drawRings();
-	if (simState.wind.vel.mag() > 0) drawWind(simState.wind);
+	if (simState.wind.vel.mag() > 0) drawWind();
 	simState.aircraftList.forEach((a) => drawAircraft(a));
 
 	simState.time = nextTime;

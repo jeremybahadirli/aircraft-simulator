@@ -19,16 +19,16 @@ export function drawGrid() {
 	strokeWeight(0.1);
 
 	const scale = simState.settings.vRange / height;
-	const halfX = (width * scale) / 2;
-	const halfY = (height * scale) / 2;
+	const halfWidth = (width * scale) / 2;
+	const halfHeight = (height * scale) / 2;
 
-	for (let i = 0; i <= halfX; i += 10) {
-		line(i, halfY, i, -halfY);
-		if (i !== 0) line(-i, halfY, -i, -halfY);
+	for (let x = 0; x <= halfWidth; x += 10) {
+		line(x, -halfHeight, x, halfHeight);
+		if (x !== 0) line(-x, halfHeight, -x, -halfHeight);
 	}
-	for (let i = 0; i <= halfY; i += 10) {
-		line(halfX, i, -halfX, i);
-		if (i !== 0) line(halfX, -i, -halfX, -i);
+	for (let y = 0; y <= halfHeight; y += 10) {
+		line(-halfWidth, y, halfWidth, y);
+		if (y !== 0) line(halfWidth, -y, -halfWidth, -y);
 	}
 
 	pop();
@@ -43,14 +43,14 @@ export function drawRings() {
 	const scale = simState.settings.vRange / height;
 	const maxRadius = (createVector(width, height).mag() * scale) / 2;
 
-	for (let i = 10; i < maxRadius; i += 10) {
-		circle(0, 0, i * 2);
+	for (let r = 10; r < maxRadius; r += 10) {
+		circle(0, 0, r * 2);
 	}
 
 	pop();
 }
 
-export function drawWind(wind) {
+export function drawWind() {
 	push();
 
 	fill('white');
@@ -58,9 +58,9 @@ export function drawWind(wind) {
 
 	translate(0, simState.settings.vRange / 2 - 5);
 
-	const windStr = Number.isInteger(wind.vel.mag())
-		? wind.vel.mag().toString()
-		: wind.vel.mag().toFixed(simState.settings.statsDecimalPlaces);
+	const windStr = Number.isInteger(simState.wind.vel.mag())
+		? simState.wind.vel.mag().toString()
+		: simState.wind.vel.mag().toFixed(simState.settings.statsDecimalPlaces);
 
 	push();
 	scale(1, -1);
@@ -69,7 +69,7 @@ export function drawWind(wind) {
 	pop();
 
 	push();
-	rotate(-wind.vel.asHeading()); // p5 positive rotation -> ccw
+	rotate(-simState.wind.vel.asHeading()); // p5 positive rotation -> ccw
 	triangle(-1, 0, 1, 0, 0, 5);
 	pop();
 
@@ -86,8 +86,8 @@ export function drawAircraft(ac) {
 
 	// Draw target
 	push();
-	noStroke();
-	circle(0, 0, 1);
+	strokeWeight(1)
+	point(0, 0)
 	pop();
 
 	// Draw vector line
