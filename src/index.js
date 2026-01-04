@@ -27,6 +27,7 @@ function setup() {
 	});
 
 	simState.events.forEach((e) => (e.armed = e.active));
+	simState.aircraftList.forEach((a) => a.updatePosition(simState.time));
 	simState.loggers.forEach((l) => l.updateProximity());
 
 	printLogs(simState.time);

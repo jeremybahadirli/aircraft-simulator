@@ -31,12 +31,6 @@ export class ASVector extends p5.Vector {
 		return this;
 	}
 
-	setASHeading2(asHeading) {
-		const heading = radians(90 - asHeading);
-		this.setHeading(heading);
-		return this;
-	}
-
 	asRotate(asDegrees) {
 		const rad = radians(-asDegrees);
 		this.rotate(rad);

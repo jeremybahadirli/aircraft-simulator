@@ -57,4 +57,24 @@ export class Aircraft {
 		const delta = p5.Vector.mult(this.trk, hours);
 		this.pos.add(delta);
 	}
+
+	turn(degrees) {
+		this.vel.asRotate(degrees);
+	}
+
+	flyHeading(heading) {
+		this.vel.setASHeading(heading);
+	}
+
+	increaseSpeed(kt) {
+		this.vel.setMag(this.vel.mag() + kt);
+	}
+
+	reduceSpeed(kt) {
+		this.vel.setMag(this.vel.mag() - kt);
+	}
+
+	maintain(TAS) {
+		this.vel.setMag(TAS);
+	}
 }

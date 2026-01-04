@@ -20,12 +20,12 @@ export const uiState = {
 };
 
 export function preConfig() {
-	simState.time = 0;
 	simState.nextLogTime = 0;
 	simState.logLines = ['\n'];
 	simState.logDirty = false;
 }
 
 export function postConfig() {
+	simState.time = simState.settings.startTimeMins / 60;
 	simState.loggers = simState.loggers.filter(Boolean);
 }
