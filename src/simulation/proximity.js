@@ -8,10 +8,6 @@ export class Proximity {
 		this.proximity = Number.POSITIVE_INFINITY;
 		this.previousProximity = Number.POSITIVE_INFINITY;
 		this.lowestProximity = Number.POSITIVE_INFINITY;
-		this.lowestCalculated = closestApproach(
-			simState.aircraftList[this.ac1],
-			simState.aircraftList[this.ac2]
-		);
 	}
 
 	static create(ac1, ac2) {
@@ -30,28 +26,27 @@ export class Proximity {
 		}
 	}
 
-	updateProximity() {
-		this.previousProximity = this.proximity;
-		this.proximity = p5.Vector.dist(
-			simState.aircraftList[this.ac1].pos,
-			simState.aircraftList[this.ac2].pos
-		);
-		this.lowestCalculated = min(
-			this.lowestCalculated,
-			closestApproach(
-				simState.aircraftList[this.ac1],
-				simState.aircraftList[this.ac2]
-			)
-		);
+	updateProximity(dt) {
+		const a1 = simState.aircraftList[this.ac1];
+		const a2 = simState.aircraftList[this.ac2];
 
-		if (this.proximity < this.lowestCalculated) return;
-		if (this.proximity < this.previousProximity) {
-			this.lowestProximity = min(this.lowestProximity, this.proximity);
-		} else {
-			this.lowestProximity = min(
-				this.lowestProximity,
-				this.lowestCalculated
-			);
+		this.previousProximity = this.proximity;
+		this.proximity = p5.Vector.dist(a1.pos, a2.pos);
+
+		this.lowestProximity = min(this.lowestProximity, this.proximity);
+
+		const r0 = p5.Vector.sub(a2.prevPos ?? a2.pos, a1.prevPos ?? a1.pos);
+		const v = p5.Vector.sub(a2.prevVel ?? a2.vel, a1.prevVel ?? a1.vel);
+
+		const vv = v.dot(v);
+		if (vv > 1e-9) {
+			let tStar = -r0.dot(v) / vv;
+			tStar = constrain(tStar, 0, dt);
+
+			const rStar = p5.Vector.add(r0, p5.Vector.mult(v, tStar));
+			const minThisStep = rStar.mag();
+
+			this.lowestProximity = min(this.lowestProximity, minThisStep);
 		}
 	}
 }

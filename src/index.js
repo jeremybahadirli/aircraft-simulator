@@ -27,8 +27,10 @@ function setup() {
 	});
 
 	simState.events.forEach((e) => (e.armed = e.active));
-	simState.aircraftList.forEach((a) => a.updatePosition(simState.time));
-	simState.loggers.forEach((l) => l.updateProximity());
+	simState.aircraftList.forEach((a) => {
+		a.updatePosition(simState.time);
+	});
+	simState.loggers.forEach((l) => l.updateProximity(0));
 
 	printLogs(simState.time);
 }
@@ -45,8 +47,12 @@ function draw() {
 				e.armed = false;
 				e.actions();
 			});
-		simState.aircraftList.forEach((a) => a.updatePosition(deltaHours));
-		simState.loggers.forEach((l) => l.updateProximity());
+		simState.aircraftList.forEach((a) => {
+			a.prevPos = a.pos.copy();
+			a.prevVel = a.vel.copy();
+			a.updatePosition(deltaHours);
+		});
+		simState.loggers.forEach((l) => l.updateProximity(deltaHours));
 		printLogs(nextTime);
 	}
 
