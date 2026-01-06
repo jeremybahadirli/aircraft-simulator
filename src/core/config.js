@@ -8,13 +8,13 @@ export function initConfig() {
 	preConfig();
 
 	simState.settings = {
-		playbackSpeed: 20,
+		playbackSpeed: 10,
 		startTimeMins: 0,
 		vRange: 120,
 		vectorMins: 1,
 		logStats: true,
 		statsDecimalPlaces: 0,
-		proximityDecimalPlaces: 1,
+		proximityDecimalPlaces: 2,
 	};
 
 	simState.wind = new Wind({

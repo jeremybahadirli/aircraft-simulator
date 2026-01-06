@@ -70,8 +70,8 @@ export function formatNumber(n, preferredDecimals = 0, leadingZeroes = 0) {
 	return { n: formatted, p: precisionChar };
 }
 
-export function getMousePos(x, y) {
-	x = ((x - width / 2) * simState.settings.vRange) / height;
-	y = (-(y - height / 2) * simState.settings.vRange) / height;
-	return { x, y };
+export function getMousePos() {
+	const x = ((mouseX - width / 2) * simState.settings.vRange) / height;
+	const y = (-(mouseY - height / 2) * simState.settings.vRange) / height;
+	return ASVector.fromXY(x, y);
 }

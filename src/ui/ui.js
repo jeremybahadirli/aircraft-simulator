@@ -5,7 +5,8 @@ export function createUI() {
 		.style('flex', '1')
 		.style('min-width', '0')
 		.style('min-height', '0')
-		.style('position', 'relative');
+		.style('position', 'relative')
+		.style('cursor', simState.rngBrgMode);
 	uiState.logDiv = createDiv()
 		.style('width', '100%')
 		.style(
@@ -39,7 +40,10 @@ export function createUI() {
 
 	uiState.rngBrgButton = createButton('RNG/BRG')
 		.parent(uiState.controlsDiv)
-		.mousePressed(() => (simState.rngBrgMode = true));
+		.mousePressed(() => {
+			simState.rngBrgMode = true;
+			uiState.canvasDiv.style('cursor', 'none');
+		});
 
 	uiState.rngBrgLabel = createInput()
 		.parent(uiState.controlsDiv)

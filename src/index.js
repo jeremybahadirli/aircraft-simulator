@@ -2,7 +2,6 @@ import { initConfig } from './core/config.js';
 import { MILLIS_PER_HOUR } from './core/constants.js';
 import { simState, uiState } from './core/state.js';
 import { printLogs } from './logging/logging.js';
-import { ASVector } from './math/asvector.js';
 import {
 	drawAircraft,
 	drawCanvas,
@@ -12,7 +11,7 @@ import {
 	drawWind,
 } from './render/drawing.js';
 import { autoPosition } from './simulation/positioning.js';
-import { formatNumber } from './simulation/utils.js';
+import { formatNumber, getMousePos } from './simulation/utils.js';
 import { createUI, handleWindowResized } from './ui/ui.js';
 
 function setup() {
@@ -27,20 +26,19 @@ function setup() {
 	uiState.canvas.mousePressed(() => {
 		if (simState.rngBrgMode) {
 			if (simState.rngBrgPos === null) {
-				simState.rngBrgPos = ASVector.fromXY(mouseX, mouseY);
+				simState.rngBrgPos = getMousePos(mouseX, mouseY);
 			} else {
-				const scale = simState.settings.vRange / height;
-				const newPos = ASVector.fromXY(mouseX, mouseY);
+				const newPos = getMousePos(mouseX, mouseY);
 				const rngBrg = p5.Vector.sub(newPos, simState.rngBrgPos);
-				rngBrg.y = -rngBrg.y;
-				const rng = rngBrg.mag() * scale;
-				const brg = rngBrg.asHeading();
 				uiState.rngBrgLabel.value(
-					`${rng.toFixed(1)} NM / ${formatNumber(brg, 0, 3).n}º`
+					`${rngBrg.mag().toFixed(1)} NM / ${
+						formatNumber(rngBrg.asHeading(), 0, 3).n
+					}º`
 				);
 
 				simState.rngBrgMode = false;
 				simState.rngBrgPos = null;
+				uiState.canvasDiv.style('cursor', '');
 			}
 		} else {
 			simState.settings.playbackSpeed =
