@@ -8,15 +8,20 @@ export const simState = {
 	events: [],
 	logLines: [],
 	logDirty: false,
+	rngBrgMode: false,
+	rngBrgPos: null,
 };
 
 export const uiState = {
 	canvas: null,
 	canvasDiv: null,
 	logDiv: null,
-	checkboxDiv: null,
+	controlsDiv: null,
 	gridCheckbox: null,
 	ringsCheckbox: null,
+	rngBrgButton: null,
+	rngBrgLabel: null,
+	vectorMinsInput: null,
 };
 
 export function preConfig() {

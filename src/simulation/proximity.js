@@ -1,5 +1,4 @@
 import { simState } from '../core/state.js';
-import { closestApproach } from './utils.js';
 
 export class Proximity {
 	constructor(ac1, ac2) {

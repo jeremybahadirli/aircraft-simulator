@@ -66,6 +66,10 @@ export class Aircraft {
 		this.vel.setASHeading(heading);
 	}
 
+	flyTrack(track) {
+		this.vel.setASHeading(createVelocityOnTrack(track))
+	}
+
 	increaseSpeed(kt) {
 		this.vel.setMag(this.vel.mag() + kt);
 	}

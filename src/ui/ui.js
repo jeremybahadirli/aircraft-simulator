@@ -24,12 +24,27 @@ export function createUI() {
 		.style('background-color', '#111')
 		.style('font-family', 'ui-monospace')
 		.style('font-size', '16px');
-	uiState.checkboxDiv = createDiv()
+	uiState.controlsDiv = createDiv()
 		.style('display', 'flex')
 		.style('gap', '16px')
 		.style('padding', '8px');
 	uiState.gridCheckbox = createPersistentCheckbox('Show Grid', 'showGrid');
 	uiState.ringsCheckbox = createPersistentCheckbox('Show Rings', 'showRings');
+
+	uiState.vectorMinsInput = createSelect().parent(uiState.controlsDiv);
+	for (let i of [0, 1, 2, 4, 8]) {
+		uiState.vectorMinsInput.option(i);
+	}
+	uiState.vectorMinsInput.selected(1);
+
+	uiState.rngBrgButton = createButton('RNG/BRG')
+		.parent(uiState.controlsDiv)
+		.mousePressed(() => (simState.rngBrgMode = true));
+
+	uiState.rngBrgLabel = createInput()
+		.parent(uiState.controlsDiv)
+		.size(80)
+		.attribute('disabled', 'true');
 }
 
 export function handleWindowResized() {
@@ -45,7 +60,7 @@ export function handleWindowResized() {
 function createPersistentCheckbox(label, storageKey) {
 	const checked = localStorage.getItem(storageKey) === 'true';
 	const checkbox = createCheckbox(`\t${label}`, checked)
-		.parent(uiState.checkboxDiv)
+		.parent(uiState.controlsDiv)
 		.style('color', '#ccc')
 		.style('font-family', 'system-ui');
 	checkbox.changed(() => {

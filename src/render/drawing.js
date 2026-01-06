@@ -1,4 +1,5 @@
-import { simState } from '../core/state.js';
+import { simState, uiState } from '../core/state.js';
+import { getMousePos } from '../simulation/utils.js';
 
 export function drawCanvas() {
 	translate(createVector(width, height).div(2));
@@ -10,6 +11,17 @@ export function drawCanvas() {
 	stroke('gray');
 	strokeWeight(1);
 	point(0, 0);
+	pop();
+}
+
+export function drawCrosshair() {
+	push();
+	stroke('white')
+	strokeWeight(0.1)
+	const mousePos = getMousePos(mouseX, mouseY);
+	translate(mousePos.x, mousePos.y);
+	line(-2, 0, 2, 0);
+	line(0, -2, 0, 2);
 	pop();
 }
 
@@ -91,7 +103,7 @@ export function drawAircraft(ac) {
 	pop();
 
 	// Draw vector line
-	const vectorLineExtent = (ac.trk.mag() / 60) * simState.settings.vectorMins;
+	const vectorLineExtent = (ac.trk.mag() / 60) * uiState.vectorMinsInput.value()
 	if (vectorLineExtent >= 1.5) {
 		push();
 		strokeWeight(0.25);
