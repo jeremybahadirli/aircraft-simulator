@@ -1,7 +1,7 @@
-import { simState } from '../core/state.js';
+import { simState, uiState } from '../core/state.js';
 import { ASVector } from '../math/asvector.js';
 import { Aircraft } from './aircraft.js';
-import { Proximity } from '../simulation/proximity.js';
+import { separationPracticeConfig } from '../core/separationPracticeConfig.js';
 
 export function autoPosition(i, j) {
 	const ac1 = simState.aircraftList[i];
@@ -15,55 +15,58 @@ export function autoPosition(i, j) {
 	});
 }
 
-function getOffset(ac1, ac2) {
-	return abs(5 / sin(p5.Vector.sub(ac2.trk, ac1.trk).asHeading()));
-}
-
 export function separationPractice() {
-	const startTime = randIntBetween(-2, -8);
-	const overSeparation = randBetween(-0.5, 0.5);
-	const lh = randIntBetween(0, 359);
-	const ls = randIntBetween(300, 600);
-	const a = randIntBetween(15, 135);
-	const s = randIntBetween(-60, 60);
+	separationPracticeConfig();
 
-	simState.settings.startTimeMins = startTime;
+	simState.settings.startTimeMins =
+		simState.separationPracticeSettings.startTime;
+
+	const ac1 = Aircraft.onHeading({
+		pos: ASVector.fromXY(0, 0),
+		heading: simState.separationPracticeSettings.a,
+		TAS: simState.separationPracticeSettings.ls,
+		halo: true,
+	});
+	const ac2 = Aircraft.onHeading({
+		pos: ASVector.fromXY(0, 0),
+		heading: 360,
+		TAS:
+			simState.separationPracticeSettings.ls -
+			simState.separationPracticeSettings.s,
+	});
 
 	const offset = getOffset(
-		Aircraft.onHeading({
-			pos: ASVector.fromXY(0, 0),
-			heading: a,
-			TAS: ls,
-			halo: true,
-		}),
-		Aircraft.onHeading({
-			pos: ASVector.fromXY(0, 0),
-			heading: 360,
-			TAS: ls - s,
-		})
+		ac1,
+		ac2,
+		simState.separationPracticeSettings.separation
+	);
+
+	ac1.flyTrack(simState.separationPracticeSettings.lh);
+	ac2.pos = ASVector.fromAngle(
+		simState.separationPracticeSettings.lh +
+			simState.separationPracticeSettings.a,
+		-offset
+	);
+	ac2.flyTrack(
+		simState.separationPracticeSettings.lh +
+			simState.separationPracticeSettings.a
 	);
 
 	simState.aircraftList = [
-		Aircraft.onHeading({
-			pos: ASVector.fromAngle(0, 0),
-			heading: lh,
-			TAS: ls,
-			halo: true,
-		}),
-		Aircraft.onHeading({
-			pos: ASVector.fromAngle(lh + a, -offset + overSeparation),
-			heading: lh + a,
-			TAS: ls - s,
+		ac1,
+		ac2,
+		Aircraft.stationary({
+			pos: ASVector.fromXY(0, 0),
+			color: 'gray',
 		}),
 	];
-	simState.loggers = [Proximity.create(0, 1)];
+	simState.stats = simState.separationPracticeStats;
+	simState.proximities = simState.separationPracticeProximities;
 	simState.events = [];
+
+	uiState.displayPracticeAnswerButton = true;
 }
 
-function randIntBetween(min, max) {
-	return Math.floor(randBetween(min, max));
-}
-
-function randBetween(min, max) {
-	return Math.random() * (max - min + 1) + min;
+function getOffset(ac1, ac2, dist = 5) {
+	return abs(dist / sin(p5.Vector.sub(ac2.trk, ac1.trk).asHeading()));
 }

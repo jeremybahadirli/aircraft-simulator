@@ -1,10 +1,12 @@
 export const simState = {
 	time: 0,
-	nextLogTime: 0,
+	lastUpdate: 0,
+	nextUpdate: 0,
 	settings: null,
 	wind: null,
 	aircraftList: [],
-	loggers: [],
+	stats: [],
+	proximities: [],
 	events: [],
 	logLines: [],
 	logDirty: false,
@@ -22,6 +24,7 @@ export const uiState = {
 	rngBrgButton: null,
 	rngBrgLabel: null,
 	vectorMinsInput: null,
+	displayPracticeAnswerButton: false,
 };
 
 export function preConfig() {
@@ -32,5 +35,6 @@ export function preConfig() {
 
 export function postConfig() {
 	simState.time = simState.settings.startTimeMins / 60;
-	simState.loggers = simState.loggers.filter(Boolean);
+	simState.lastUpdate = simState.time;
+	simState.nextUpdate = simState.time;
 }

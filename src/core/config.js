@@ -1,20 +1,21 @@
 import { ASVector } from '../math/asvector.js';
 import { Aircraft } from '../simulation/aircraft.js';
-import { separationPractice } from '../simulation/positioning.js';
+import { autoPosition, separationPractice } from '../simulation/positioning.js';
 import { Wind } from '../simulation/wind.js';
 import { postConfig, preConfig, simState } from './state.js';
+import { Stat } from '../simulation/stat.js';
+import { Proximity } from '../simulation/proximity.js';
 
 export function initConfig() {
 	preConfig();
 
 	simState.settings = {
-		playbackSpeed: 10,
+		playbackSpeed: 1,
+		updateFrequency: 12,
 		startTimeMins: 0,
-		vRange: 120,
-		vectorMins: 1,
-		logStats: true,
+		vRange: 100,
 		statsDecimalPlaces: 0,
-		proximityDecimalPlaces: 2,
+		proximityDecimalPlaces: 1,
 	};
 
 	simState.wind = new Wind({
@@ -25,16 +26,15 @@ export function initConfig() {
 	simState.aircraftList = [
 		Aircraft.onHeading({
 			pos: ASVector.fromAngle(0, 0),
-			heading: 20,
+			heading: 45,
 			TAS: 360,
 			halo: true,
 		}),
 		Aircraft.onHeading({
 			pos: ASVector.fromAngle(0, 0),
-			heading: 90,
+			heading: 360,
 			TAS: 300,
 			halo: false,
-			color: 'green',
 		}),
 		// Aircraft.onHeading({
 		// 	pos: ASVector.fromAngle(0, 0),
@@ -50,9 +50,11 @@ export function initConfig() {
 		// }),
 	];
 
-	simState.loggers = [
-		// Proximity.create(0, 1),
-		// Proximity.create(1, 2),
+	simState.stats = [
+	];
+
+	simState.proximities = [
+		Proximity.create(0, 1)
 	];
 
 	simState.events = [

@@ -23,7 +23,7 @@ function setup() {
 	handleWindowResized();
 
 	const defaultPlaybackSpeed = simState.settings.playbackSpeed;
-	uiState.canvas.mousePressed(() => {
+	uiState.canvas.mouseClicked(() => {
 		if (simState.rngBrgMode) {
 			if (simState.rngBrgPos === null) {
 				simState.rngBrgPos = getMousePos(mouseX, mouseY);
@@ -52,7 +52,7 @@ function setup() {
 	simState.aircraftList.forEach((a) => {
 		a.updatePosition(simState.time);
 	});
-	simState.loggers.forEach((l) => l.updateProximity(0));
+	simState.proximities.forEach((l) => l.updateProximity(0));
 
 	printLogs(simState.time);
 }
@@ -62,7 +62,7 @@ function draw() {
 		(deltaTime / MILLIS_PER_HOUR) * simState.settings.playbackSpeed;
 	const nextTime = simState.time + deltaHours;
 
-	if (simState.settings.playbackSpeed !== 0) {
+	if (nextTime > simState.nextUpdate) {
 		simState.events
 			.filter((e) => e.armed && e.trigger())
 			.forEach((e) => {
@@ -72,18 +72,23 @@ function draw() {
 		simState.aircraftList.forEach((a) => {
 			a.prevPos = a.pos.copy();
 			a.prevVel = a.vel.copy();
-			a.updatePosition(deltaHours);
+			a.updatePosition(nextTime - simState.lastUpdate);
 		});
-		simState.loggers.forEach((l) => l.updateProximity(deltaHours));
-		printLogs(nextTime);
+		simState.proximities.forEach((l) =>
+			l.updateProximity(nextTime - simState.lastUpdate)
+		);
+
+		simState.lastUpdate = nextTime;
+		simState.nextUpdate += simState.settings.updateFrequency / 60 / 60;
 	}
+	if (simState.settings.playbackSpeed !== 0) printLogs(nextTime);
 
 	drawCanvas();
 	if (simState.rngBrgMode) drawCrosshair();
 	if (uiState.gridCheckbox.checked()) drawGrid();
 	if (uiState.ringsCheckbox.checked()) drawRings();
 	if (simState.wind.vel.mag() > 0) drawWind();
-	simState.aircraftList.forEach((a) => drawAircraft(a));
+	[...simState.aircraftList].reverse().forEach((a) => drawAircraft(a));
 
 	simState.time = nextTime;
 }

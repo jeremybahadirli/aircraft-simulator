@@ -1,7 +1,8 @@
 import { simState } from '../core/state.js';
 
 export class Proximity {
-	constructor(ac1, ac2) {
+	constructor(ac1, ac2, name) {
+		this.name = name;
 		this.ac1 = ac1;
 		this.ac2 = ac2;
 		this.proximity = Number.POSITIVE_INFINITY;
@@ -9,20 +10,8 @@ export class Proximity {
 		this.lowestProximity = Number.POSITIVE_INFINITY;
 	}
 
-	static create(ac1, ac2) {
-		const allValidAircraft = (...idx) =>
-			idx.every(
-				(i) =>
-					Number.isInteger(i) &&
-					i >= 0 &&
-					i < simState.aircraftList.length
-			);
-
-		if (allValidAircraft(ac1, ac2)) {
-			return new Proximity(ac1, ac2);
-		} else {
-			return null;
-		}
+	static create(ac1, ac2, name = `Aircraft ${ac1}-${ac2}`) {
+		return new Proximity(ac1, ac2, name);
 	}
 
 	updateProximity(dt) {

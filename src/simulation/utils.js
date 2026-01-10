@@ -73,5 +73,19 @@ export function formatNumber(n, preferredDecimals = 0, leadingZeroes = 0) {
 export function getMousePos() {
 	const x = ((mouseX - width / 2) * simState.settings.vRange) / height;
 	const y = (-(mouseY - height / 2) * simState.settings.vRange) / height;
-	return ASVector.fromXY(x, y);
+
+	const roundedX = Math.round(x * 10) / 10;
+	const roundedY = Math.round(y * 10) / 10;
+
+	return keyIsPressed
+		? ASVector.fromXY(roundedX, roundedY)
+		: ASVector.fromXY(x, y);
+}
+
+export function randIntBetween(min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function randBetween(min, max) {
+	return Math.random() * (max - min) + min;
 }

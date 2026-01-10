@@ -11,13 +11,7 @@ export function createUI() {
 		.style('width', '100%')
 		.style(
 			'height',
-			`${
-				(simState.settings.logStats
-					? simState.aircraftList.length
-					: 0) +
-				simState.loggers.length +
-				3
-			}lh`
+			`${simState.stats.length + simState.proximities.length + 3}lh`
 		)
 		.style('white-space', 'pre')
 		.style('overflow', 'auto')
@@ -40,7 +34,7 @@ export function createUI() {
 
 	uiState.rngBrgButton = createButton('RNG/BRG')
 		.parent(uiState.controlsDiv)
-		.mousePressed(() => {
+		.mouseClicked(() => {
 			simState.rngBrgMode = true;
 			uiState.canvasDiv.style('cursor', 'none');
 		});
@@ -48,7 +42,17 @@ export function createUI() {
 	uiState.rngBrgLabel = createInput()
 		.parent(uiState.controlsDiv)
 		.size(80)
-		.attribute('disabled', 'true');
+		.attribute('disabled', 'true')
+		.style('color', 'black');
+
+	uiState.practiceAnswerButton = createButton('Show Answer')
+		.parent(uiState.controlsDiv)
+		.style('display', uiState.displayPracticeAnswerButton ? '' : 'none')
+		.mouseClicked(() => {
+			simState.settings.playbackSpeed = 20;
+			simState.settings.updateFrequency = 0;
+			simState.nextUpdate = simState.time;
+		});
 }
 
 export function handleWindowResized() {

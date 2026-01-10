@@ -7,30 +7,31 @@ export function printLogs(hours) {
 	const s = Math.trunc((hours * 60 * 60) % 60);
 	const sStr = (s < 0 ? '-' : '') + abs(s).toString().padStart(2, '0');
 	stageLog(`Time: ${m}m ${sStr}s`);
-	for (const [i, ac] of simState.aircraftList.entries()) {
-		if (!simState.settings.logStats) break;
+
+	for (const stat of simState.stats) {
 		const hdgStr = formatNumber(
-			ac.vel.asHeading(),
+			stat.aircraft.vel.asHeading(),
 			simState.settings.statsDecimalPlaces,
 			3
 		);
 		const trkStr = formatNumber(
-			ac.trk.asHeading(),
+			stat.aircraft.trk.asHeading(),
 			simState.settings.statsDecimalPlaces,
 			3
 		);
 		const gsStr = formatNumber(
-			ac.trk.mag(),
+			stat.aircraft.trk.mag(),
 			simState.settings.statsDecimalPlaces
 		);
 		stageLog(
-			`Aircraft ${i}:\t`,
+			`${stat.name}:\t`,
 			`hdg ${hdgStr.p} ${hdgStr.n}°\t`,
 			`trk ${trkStr.p} ${trkStr.n}°\t`,
 			`gs ${gsStr.p} ${gsStr.n} KT`
 		);
 	}
-	for (const pl of simState.loggers) {
+
+	for (const pl of simState.proximities) {
 		const proximityStr = formatNumber(
 			pl.proximity,
 			simState.settings.proximityDecimalPlaces
@@ -40,7 +41,7 @@ export function printLogs(hours) {
 			simState.settings.proximityDecimalPlaces
 		);
 		stageLog(
-			`Aircraft ${pl.ac1}-${pl.ac2}:\t`,
+			`${pl.name}:\t`,
 			`proximity ${proximityStr.p} ${proximityStr.n} NM\t`,
 			`nearest ${lowestProximityStr.p} ${lowestProximityStr.n} NM`
 		);
@@ -52,10 +53,37 @@ export function printLogs(hours) {
 export function stageLog(...args) {
 	const msg = args.join('');
 	simState.logLines.push('  ' + msg);
-	if (simState.logLines.length > MAX_LOG_LINES) {
-		simState.logLines.shift();
-	}
+	if (simState.logLines.length > MAX_LOG_LINES) simState.logLines.shift();
+	simState.logLines = dedupeFrames(simState.logLines);
 	simState.logDirty = true;
+}
+
+function dedupeFrames(lines) {
+	const frames = [];
+	let cur = [];
+
+	for (const line of lines) {
+		if (line.startsWith('  Time:')) {
+			if (cur.length) frames.push(cur);
+			cur = [line];
+		} else {
+			cur.push(line);
+		}
+	}
+	if (cur.length) frames.push(cur);
+
+	const out = [];
+	let lastKey = null;
+
+	for (const frame of frames) {
+		const key = frame.join('\n');
+		if (key !== lastKey) {
+			out.push(...frame);
+		}
+		lastKey = key;
+	}
+
+	return out;
 }
 
 export function flushLog() {

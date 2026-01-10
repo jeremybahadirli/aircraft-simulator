@@ -40,10 +40,7 @@ export class Aircraft {
 	static stationary({ pos, halo, color }) {
 		return new Aircraft({
 			pos,
-			vel: ASVector.fromAngle(
-				simState.wind.vel.asHeading() + 180,
-				simState.wind.vel.mag()
-			),
+			vel: p5.Vector.mult(simState.wind.vel, -1),
 			halo,
 			color,
 		});
@@ -67,7 +64,7 @@ export class Aircraft {
 	}
 
 	flyTrack(track) {
-		this.vel.setASHeading(createVelocityOnTrack(track))
+		this.vel = createVelocityOnTrack(track, this.vel.mag());
 	}
 
 	increaseSpeed(kt) {

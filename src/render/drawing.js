@@ -16,12 +16,12 @@ export function drawCanvas() {
 
 export function drawCrosshair() {
 	push();
-	stroke('white')
-	strokeWeight(0.1)
+	stroke('white');
+	strokeWeight(0.1);
 	const mousePos = getMousePos(mouseX, mouseY);
 	translate(mousePos.x, mousePos.y);
-	line(-2, 0, 2, 0);
-	line(0, -2, 0, 2);
+	line(-1.5, 0, 1.5, 0);
+	line(0, -1.5, 0, 1.5);
 	pop();
 }
 
@@ -98,12 +98,13 @@ export function drawAircraft(ac) {
 
 	// Draw target
 	push();
-	strokeWeight(1)
-	point(0, 0)
+	strokeWeight(1);
+	point(0, 0);
 	pop();
 
 	// Draw vector line
-	const vectorLineExtent = (ac.trk.mag() / 60) * uiState.vectorMinsInput.value()
+	const vectorLineExtent =
+		(ac.trk.mag() / 60) * uiState.vectorMinsInput.value();
 	if (vectorLineExtent >= 1.5) {
 		push();
 		strokeWeight(0.25);
