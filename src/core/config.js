@@ -10,64 +10,62 @@ export function initConfig() {
 	preConfig();
 
 	simState.settings = {
-		playbackSpeed: 1,
+		playbackSpeed: 10,
 		updateFrequency: 12,
 		startTimeMins: 0,
 		vRange: 100,
-		statsDecimalPlaces: 0,
-		proximityDecimalPlaces: 1,
+		statsDecimalPlaces: 1,
+		proximityDecimalPlaces: 2,
 	};
 
 	simState.wind = new Wind({
-		from: 215,
+		from: 0,
 		speed: 0,
 	});
 
 	simState.aircraftList = [
-		Aircraft.onHeading({
-			pos: ASVector.fromAngle(0, 0),
-			heading: 45,
-			TAS: 360,
+		Aircraft.onTrack({
+			pos: ASVector.fromXY(0, 20),
+			track: 90,
+			TAS: 300,
 			halo: true,
 		}),
 		Aircraft.onHeading({
-			pos: ASVector.fromAngle(0, 0),
-			heading: 360,
+			pos: ASVector.fromXY(0, 0),
+			heading: 0,
 			TAS: 300,
-			halo: false,
 		}),
-		// Aircraft.onHeading({
-		// 	pos: ASVector.fromAngle(0, 0),
-		// 	heading: 20,
-		// 	TAS: 360,
-		// 	halo: true,
-		// }),
-		// Aircraft.onTrack({
-		// 	pos: ASVector.fromAngle(0, 0),
-		// 	track: 360,
-		// 	TAS: 300,
-		// 	halo: false,
-		// }),
 	];
 
 	simState.stats = [
+		Stat.create(1, "Test")
 	];
 
 	simState.proximities = [
-		Proximity.create(0, 1)
+		Proximity.create(0, 1, '90 base'),
 	];
 
 	simState.events = [
-		{
-			active: false,
-			trigger: () => simState.aircraftList[2].pos.x > 0,
-			actions: () => simState.aircraftList[2].turn(-20),
-		},
+	// 	{
+	// 		active: true,
+	// 		trigger: () => simState.time > 2 / 60,
+	// 		actions: () => {
+	// 			((simState.aircraftList[0] = Aircraft.direct({
+	// 				pos: simState.aircraftList[0].pos,
+	// 				fix: ASVector.fromXY(-30, 0),
+	// 				TAS: simState.aircraftList[0].vel.mag(),
+	// 			})),
+	// 				(simState.aircraftList[1] = Aircraft.direct({
+	// 					pos: simState.aircraftList[1].pos,
+	// 					fix: ASVector.fromXY(-30, 0),
+	// 					TAS: simState.aircraftList[1].vel.mag(),
+	// 				})));
+	// 		},
+	// 	},
 	];
 
-	separationPractice();
+	// separationPractice();
 	// autoPosition(0, 1);
-	// autoPosition(2, 3);
 
 	postConfig();
 }

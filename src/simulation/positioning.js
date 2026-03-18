@@ -2,6 +2,7 @@ import { simState, uiState } from '../core/state.js';
 import { ASVector } from '../math/asvector.js';
 import { Aircraft } from './aircraft.js';
 import { separationPracticeConfig } from '../core/separationPracticeConfig.js';
+import { randBetween } from './utils.js';
 
 export function autoPosition(i, j) {
 	const ac1 = simState.aircraftList[i];
@@ -17,22 +18,23 @@ export function autoPosition(i, j) {
 
 export function separationPractice() {
 	separationPracticeConfig();
+	const leadTrack = randBetween(0, 360);
 
 	simState.settings.startTimeMins =
 		simState.separationPracticeSettings.startTime;
 
 	const ac1 = Aircraft.onHeading({
 		pos: ASVector.fromXY(0, 0),
-		heading: simState.separationPracticeSettings.a,
-		TAS: simState.separationPracticeSettings.ls,
+		heading: simState.separationPracticeSettings.angle,
+		TAS: simState.separationPracticeSettings.leadSpeed,
 		halo: true,
 	});
 	const ac2 = Aircraft.onHeading({
 		pos: ASVector.fromXY(0, 0),
 		heading: 360,
 		TAS:
-			simState.separationPracticeSettings.ls -
-			simState.separationPracticeSettings.s,
+			simState.separationPracticeSettings.leadSpeed -
+			simState.separationPracticeSettings.speedDifference,
 	});
 
 	const offset = getOffset(
@@ -41,16 +43,12 @@ export function separationPractice() {
 		simState.separationPracticeSettings.separation
 	);
 
-	ac1.flyTrack(simState.separationPracticeSettings.lh);
+	ac1.flyTrack(leadTrack);
 	ac2.pos = ASVector.fromAngle(
-		simState.separationPracticeSettings.lh +
-			simState.separationPracticeSettings.a,
+		leadTrack + simState.separationPracticeSettings.angle,
 		-offset
 	);
-	ac2.flyTrack(
-		simState.separationPracticeSettings.lh +
-			simState.separationPracticeSettings.a
-	);
+	ac2.flyTrack(leadTrack + simState.separationPracticeSettings.angle);
 
 	simState.aircraftList = [
 		ac1,
