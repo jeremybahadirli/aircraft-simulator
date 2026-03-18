@@ -10,8 +10,8 @@ export function initConfig() {
 	preConfig();
 
 	simState.settings = {
-		playbackSpeed: 10,
-		updateFrequency: 12,
+		playbackSpeed: 0,
+		updateFrequency: 0,
 		startTimeMins: 0,
 		vRange: 100,
 		statsDecimalPlaces: 1,
@@ -25,24 +25,25 @@ export function initConfig() {
 
 	simState.aircraftList = [
 		Aircraft.onTrack({
-			pos: ASVector.fromXY(0, 20),
-			track: 90,
+			pos: ASVector.fromXY(0, 0),
+			track: 45,
 			TAS: 300,
 			halo: true,
 		}),
 		Aircraft.onHeading({
 			pos: ASVector.fromXY(0, 0),
-			heading: 0,
+			heading: 270,
 			TAS: 300,
 		}),
 	];
 
 	simState.stats = [
-		Stat.create(1, "Test")
+		Stat.create(0),
+		Stat.create(1)
 	];
 
 	simState.proximities = [
-		Proximity.create(0, 1, '90 base'),
+		Proximity.create(0, 1),
 	];
 
 	simState.events = [
@@ -64,8 +65,12 @@ export function initConfig() {
 	// 	},
 	];
 
+	// Ignores config.js, uses separationPracticeConfig.js
 	// separationPractice();
-	// autoPosition(0, 1);
+
+	// Normally, ac0 starts at (0,0) with a hdg
+	// ac1 placed at (0,0) to be autopositioned with hdg=0
+	autoPosition(0, 1);
 
 	postConfig();
 }
