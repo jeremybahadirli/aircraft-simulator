@@ -11,13 +11,13 @@ export function createUI() {
 		.style('width', '100%')
 		.style(
 			'height',
-			`${simState.stats.length + simState.proximities.length + 3}lh`
+			`${simState.stats.length + simState.proximities.length + 3}lh`,
 		)
 		.style('white-space', 'pre')
 		.style('overflow', 'auto')
 		.style('color', '#ccc')
 		.style('background-color', '#111')
-		.style('font-family', 'ui-monospace')
+		.style('font-family', 'ERAMv300')
 		.style('font-size', '16px');
 	uiState.controlsDiv = createDiv()
 		.style('display', 'flex')

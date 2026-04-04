@@ -11,3 +11,8 @@ body {
 canvas {
 	display: block;
 }
+
+@font-face {
+	font-family: 'ERAMv300';
+	src: url('./ERAMv300.ttf');
+}
