@@ -1,7 +1,9 @@
 import { simState } from '../core/state.js';
 import { ASVector } from '../math/asvector.js';
-import { SpeedConversions } from '../math/speedConversions.js';
+import { resolveTas } from './speed.js';
 import { createVelocityDirect, createVelocityOnTrack } from './utils.js';
+import type { SpeedSpec } from './speed.js';
+import { SpeedConversions } from '../math/speedConversions.js';
 
 interface AircraftOptions {
 	pos: ASVector;
@@ -14,7 +16,7 @@ interface AircraftOptions {
 interface HeadingAircraftOptions {
 	pos: ASVector;
 	heading: number;
-	TAS: number;
+	speed: SpeedSpec;
 	alt?: number;
 	halo?: boolean;
 	color?: string;
@@ -23,7 +25,7 @@ interface HeadingAircraftOptions {
 interface TrackAircraftOptions {
 	pos: ASVector;
 	track: number;
-	TAS: number;
+	speed: SpeedSpec;
 	alt?: number;
 	halo?: boolean;
 	color?: string;
@@ -32,7 +34,7 @@ interface TrackAircraftOptions {
 interface DirectAircraftOptions {
 	pos: ASVector;
 	fix: ASVector;
-	TAS: number;
+	speed: SpeedSpec;
 	alt?: number;
 	halo?: boolean;
 	color?: string;
@@ -64,14 +66,14 @@ export class Aircraft {
 	static onHeading({
 		pos,
 		heading,
-		TAS,
+		speed,
 		alt,
 		halo,
 		color,
 	}: HeadingAircraftOptions): Aircraft {
 		return new Aircraft({
 			pos,
-			vel: ASVector.fromAngle(heading, TAS),
+			vel: ASVector.fromAngle(heading, resolveTas(speed, alt ?? 24000)),
 			alt,
 			halo,
 			color,
@@ -81,14 +83,14 @@ export class Aircraft {
 	static onTrack({
 		pos,
 		track,
-		TAS,
+		speed,
 		alt,
 		halo,
 		color,
 	}: TrackAircraftOptions): Aircraft {
 		return new Aircraft({
 			pos,
-			vel: createVelocityOnTrack(track, TAS),
+			vel: createVelocityOnTrack(track, resolveTas(speed, alt ?? 24000)),
 			alt,
 			halo,
 			color,
@@ -98,18 +100,53 @@ export class Aircraft {
 	static direct({
 		pos,
 		fix,
-		TAS,
+		speed,
 		alt,
 		halo,
 		color,
 	}: DirectAircraftOptions): Aircraft {
 		return new Aircraft({
 			pos,
-			vel: createVelocityDirect(fix, pos, TAS),
+			vel: createVelocityDirect(
+				fix,
+				pos,
+				resolveTas(speed, alt ?? 24000),
+			),
 			alt,
 			halo,
 			color,
 		});
+	}
+
+	get tas(): number {
+		return this.vel.mag();
+	}
+
+	set tas(value: number) {
+		this.vel.setMag(value);
+	}
+
+	get mach(): number {
+		return SpeedConversions.tasToMach(
+			this.tas,
+			simState.atmosphere.getTemperatureCAtAltitude(this.alt),
+		);
+	}
+
+	set mach(value: number) {
+		this.tas = resolveTas({ unit: 'mach', value }, this.alt);
+	}
+
+	get ias(): number {
+		return SpeedConversions.tasToIas(
+			this.tas,
+			simState.atmosphere.getPressureAtAltitude(this.alt),
+			simState.atmosphere.getTemperatureCAtAltitude(this.alt),
+		);
+	}
+
+	set ias(value: number) {
+		this.tas = resolveTas({ unit: 'ias', value }, this.alt);
 	}
 
 	get trk(): ASVector {
@@ -133,29 +170,18 @@ export class Aircraft {
 	}
 
 	flyTrack(track: number): void {
-		this.vel = createVelocityOnTrack(track, this.vel.mag());
+		this.vel = createVelocityOnTrack(track, this.tas);
 	}
 
 	increaseSpeed(kt: number): void {
-		this.vel.setMag(this.vel.mag() + kt);
+		this.tas += kt;
 	}
 
 	reduceSpeed(kt: number): void {
-		this.vel.setMag(this.vel.mag() - kt);
+		this.tas -= kt;
 	}
 
-	maintain(TAS: number): void {
-		this.vel.setMag(TAS);
-	}
-
-	getMach(): number {
-		const tempC = simState.atmosphere.getTemperatureCAtAltitude(this.alt);
-		return SpeedConversions.tasToMach(this.vel.mag(), tempC);
-	}
-
-	getIas(): number {
-		const pressure = simState.atmosphere.getPressureAtAltitude(this.alt);
-		const tempC = simState.atmosphere.getTemperatureCAtAltitude(this.alt);
-		return SpeedConversions.tasToCas(this.vel.mag(), pressure, tempC);
+	maintain(speed: SpeedSpec): void {
+		this.tas = resolveTas(speed, this.alt);
 	}
 }

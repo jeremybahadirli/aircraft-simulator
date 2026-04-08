@@ -1,4 +1,4 @@
-import { FT_TO_M, g, P0_INHG as P0, R, T0_C as T0 } from '../core/constants.js';
+import { FT_TO_M, g, P0, R, T0 } from '../core/constants.js';
 import { ASVector } from '../math/asvector.js';
 import { tempCToK } from './utils.js';
 
@@ -49,12 +49,12 @@ export class Atmosphere {
 		// Layer 0: sea level to 11,000 m
 		if (h <= 11000) {
 			const lapseRateCPerM = 0.0065;
-			return T0 - lapseRateCPerM * h + this.seaLevelTemp;
+			return this.seaLevelTemp - lapseRateCPerM * h;
 		}
 
 		// Layer 1: 11,000 m to 20,000 m
 		if (h <= 20000) {
-			return -56.5 + this.seaLevelTemp;
+			return -71.5 + this.seaLevelTemp;
 		}
 
 		throw new RangeError(

@@ -1,4 +1,4 @@
-import { GAMMA, KNOTS_PER_MPS, P0_INHG, R, T0_C } from '../core/constants.js';
+import { GAMMA, KNOTS_PER_MPS, P0, R, T0 } from '../core/constants.js';
 import { tempCToK } from '../simulation/utils.js';
 
 export class SpeedConversions {
@@ -18,7 +18,7 @@ export class SpeedConversions {
 		return mach * aKt;
 	}
 
-	static tasToCas(
+	static tasToIas(
 		tasKt: number,
 		pressureInHg: number,
 		tempC: number,
@@ -26,43 +26,37 @@ export class SpeedConversions {
 		const mach = this.tasToMach(tasKt, tempC);
 
 		if (mach >= 1) {
-			throw new RangeError(
-				'tasToCas supports subsonic flow only (M < 1).',
-			);
+			throw new RangeError('tasToIas does not support supersonic speed.');
 		}
 
 		const qc = pressureInHg * (Math.pow(1 + 0.2 * mach * mach, 3.5) - 1);
 
-		const machCas = Math.sqrt(5 * (Math.pow(qc / P0_INHG + 1, 2 / 7) - 1));
+		const machCas = Math.sqrt(5 * (Math.pow(qc / P0 + 1, 2 / 7) - 1));
 
-		const a0Kt = this.getSpeedOfSoundKt(T0_C);
+		const a0Kt = this.getSpeedOfSoundKt(T0);
 		return machCas * a0Kt;
 	}
 
-	static casToTas(
+	static iasToTas(
 		casKt: number,
 		pressureInHg: number,
 		tempC: number,
 	): number {
-		const a0Kt = this.getSpeedOfSoundKt(T0_C);
+		const a0Kt = this.getSpeedOfSoundKt(T0);
 		const machCas = casKt / a0Kt;
 
 		if (machCas >= 1) {
-			throw new RangeError(
-				'casToTas supports subsonic flow only for the pitot relation used here.',
-			);
+			throw new RangeError('iasToTas does not support supersonic speed.');
 		}
 
-		const qc = P0_INHG * (Math.pow(1 + 0.2 * machCas * machCas, 3.5) - 1);
+		const qc = P0 * (Math.pow(1 + 0.2 * machCas * machCas, 3.5) - 1);
 
 		const mach = Math.sqrt(
 			5 * (Math.pow(qc / pressureInHg + 1, 2 / 7) - 1),
 		);
 
 		if (mach >= 1) {
-			throw new RangeError(
-				'casToTas produced M >= 1; a supersonic pitot relation would be required.',
-			);
+			throw new RangeError('iasToTas does not support supersonic speed.');
 		}
 
 		return this.machToTas(mach, tempC);

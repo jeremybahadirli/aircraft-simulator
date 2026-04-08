@@ -29,13 +29,13 @@ export function separationPractice(): void {
 	const ac1 = Aircraft.onHeading({
 		pos: ASVector.fromXY(0, 0),
 		heading: settings.angle,
-		TAS: settings.leadSpeed,
+		speed: { unit: 'tas', value: settings.leadSpeed },
 		halo: true,
 	});
 	const ac2 = Aircraft.onHeading({
 		pos: ASVector.fromXY(0, 0),
 		heading: 360,
-		TAS: settings.leadSpeed - settings.speedDifference,
+		speed: { unit: 'tas', value: settings.leadSpeed - settings.speedDifference },
 	});
 
 	const offset = getOffset(ac1, ac2, settings.separation);

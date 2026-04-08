@@ -1,4 +1,5 @@
 import { ASVector } from '../math/asvector.js';
+import { SpeedConversions } from '../math/speedConversions.js';
 import { Aircraft } from '../simulation/aircraft.js';
 import { Atmosphere } from '../simulation/atmosphere.js';
 import { autoPosition } from '../simulation/positioning.js';
@@ -23,23 +24,24 @@ export function initConfig(): void {
 	simState.aircraftList = [
 		Aircraft.onTrack({
 			pos: ASVector.fromXY(0, 0),
-			track: 100,
+			track: 270,
 			alt: 20000,
-			TAS: 400,
+			speed: { unit: 'ias', value: 300 },
 			halo: true,
 		}),
 		Aircraft.onHeading({
-			pos: ASVector.fromXY(0, 0),
-			heading: 300,
+			pos: ASVector.fromXY(-10, 0),
+			heading: 270,
 			alt: 20000,
-			TAS: 400,
+			speed: { unit: 'ias', value: 290 },
 		}),
 	];
 
 	simState.stats = [Stat.create(0), Stat.create(1)];
 
-	simState.proximities = [Proximity.acToAc({ ac1: 0, ac2: 1 }),
-		Proximity.acToFRD({ac1: 1, r: 0, d: 10})
+	simState.proximities = [
+		Proximity.acToAc({ ac1: 0, ac2: 1 }),
+		Proximity.acToFRD({ ac1: 1, r: 0, d: 10 }),
 	];
 
 	simState.events = [
@@ -50,12 +52,12 @@ export function initConfig(): void {
 		// 			((simState.aircraftList[0] = Aircraft.direct({
 		// 				pos: simState.aircraftList[0].pos,
 		// 				fix: ASVector.fromXY(-30, 0),
-		// 				TAS: simState.aircraftList[0].vel.mag(),
+		// 				speed: { unit: 'tas', value: simState.aircraftList[0].tas },
 		// 			})),
 		// 				(simState.aircraftList[1] = Aircraft.direct({
 		// 					pos: simState.aircraftList[1].pos,
 		// 					fix: ASVector.fromXY(-30, 0),
-		// 					TAS: simState.aircraftList[1].vel.mag(),
+		// 					speed: { unit: 'tas', value: simState.aircraftList[1].tas },
 		// 				})));
 		// 		},
 		// 	},

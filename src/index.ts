@@ -64,7 +64,6 @@ function setup(): void {
 	simState.proximities.forEach((l) => l.updateProximity(0));
 
 	printLogs(simState.time);
-	console.log(simState.aircraftList[0].getIas())
 }
 
 function draw(): void {
