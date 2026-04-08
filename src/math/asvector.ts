@@ -5,14 +5,14 @@ export class ASVector extends p5.Vector {
 		super(x, y);
 	}
 
-	asHeading() {
+	asHeading(): number {
 		const heading = degrees(this.heading());
 		let asHeading = 90 - heading;
 		asHeading = ((asHeading % 360) + 360) % 360;
 		return asHeading;
 	}
 
-	setASHeading(asHeading) {
+	setASHeading(asHeading: number): this {
 		const h = ((asHeading % 360) + 360) % 360;
 		const mag = this.mag();
 
@@ -31,13 +31,13 @@ export class ASVector extends p5.Vector {
 		return this;
 	}
 
-	asRotate(asDegrees) {
+	asRotate(asDegrees: number): this {
 		const rad = radians(-asDegrees);
 		this.rotate(rad);
 		return this;
 	}
 
-	static fromXY(x, y) {
+	static fromXY(x: number, y: number): ASVector {
 		if (!Number.isFinite(x) || !Number.isFinite(y)) {
 			haltWithError(`Could not create vector with coords: (${x}, ${y})`);
 		}
@@ -45,7 +45,7 @@ export class ASVector extends p5.Vector {
 		return new ASVector(x, y);
 	}
 
-	static fromAngle(headingDeg, magnitude = 1) {
+	static fromAngle(headingDeg: number, magnitude = 1): ASVector {
 		if (!Number.isFinite(magnitude)) {
 			haltWithError(`Could not create vector with mag: ${magnitude}`);
 		}
@@ -56,7 +56,7 @@ export class ASVector extends p5.Vector {
 		return v;
 	}
 
-	copy() {
+	copy(): ASVector {
 		return new ASVector(this.x, this.y);
 	}
 }

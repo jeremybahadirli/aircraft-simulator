@@ -1,0 +1,12 @@
+{
+	"private": true,
+	"scripts": {
+		"build": "tsc --project tsconfig.json",
+		"serve": "python3 -m http.server 4173 --bind 127.0.0.1",
+		"typecheck": "tsc --project tsconfig.json --noEmit",
+		"watch": "tsc --project tsconfig.json --watch"
+	},
+	"devDependencies": {
+		"typescript": "^5.0.0"
+	}
+}

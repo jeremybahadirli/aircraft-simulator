@@ -1,7 +1,8 @@
 import { simState, uiState } from '../core/state.js';
+import type { Aircraft } from '../simulation/aircraft.js';
 import { getMousePos } from '../simulation/utils.js';
 
-export function drawCanvas() {
+export function drawCanvas(): void {
 	translate(createVector(width, height).div(2));
 	scale(height / simState.settings.vRange);
 	scale(1, -1);
@@ -14,7 +15,7 @@ export function drawCanvas() {
 	pop();
 }
 
-export function drawCrosshair() {
+export function drawCrosshair(): void {
 	push();
 	stroke('white');
 	strokeWeight(0.1);
@@ -25,7 +26,7 @@ export function drawCrosshair() {
 	pop();
 }
 
-export function drawGrid() {
+export function drawGrid(): void {
 	push();
 	stroke('gray');
 	strokeWeight(0.1);
@@ -46,7 +47,7 @@ export function drawGrid() {
 	pop();
 }
 
-export function drawRings() {
+export function drawRings(): void {
 	push();
 	noFill();
 	stroke('gray');
@@ -62,7 +63,7 @@ export function drawRings() {
 	pop();
 }
 
-export function drawWind() {
+export function drawWind(): void {
 	push();
 
 	fill('white');
@@ -70,9 +71,11 @@ export function drawWind() {
 
 	translate(0, simState.settings.vRange / 2 - 5);
 
-	const windStr = Number.isInteger(simState.wind.vel.mag())
-		? simState.wind.vel.mag().toString()
-		: simState.wind.vel.mag().toFixed(simState.settings.statsDecimalPlaces);
+	const windStr = Number.isInteger(simState.atmosphere.windVel.mag())
+		? simState.atmosphere.windVel.mag().toString()
+		: simState.atmosphere.windVel
+				.mag()
+				.toFixed(simState.settings.statsDecimalPlaces);
 
 	push();
 	scale(1, -1);
@@ -81,14 +84,14 @@ export function drawWind() {
 	pop();
 
 	push();
-	rotate(-simState.wind.vel.asHeading()); // p5 positive rotation -> ccw
+	rotate(-simState.atmosphere.windVel.asHeading()); // p5 positive rotation -> ccw
 	triangle(-1, 0, 1, 0, 0, 5);
 	pop();
 
 	pop();
 }
 
-export function drawAircraft(ac) {
+export function drawAircraft(ac: Aircraft): void {
 	push();
 
 	translate(ac.pos);
@@ -104,7 +107,7 @@ export function drawAircraft(ac) {
 
 	// Draw vector line
 	const vectorLineExtent =
-		(ac.trk.mag() / 60) * uiState.vectorMinsInput.value();
+		(ac.trk.mag() / 60) * Number(uiState.vectorMinsInput?.value() ?? 0);
 	if (vectorLineExtent >= 1.5) {
 		push();
 		strokeWeight(0.25);

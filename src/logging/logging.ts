@@ -2,7 +2,7 @@ import { MAX_LOG_LINES } from '../core/constants.js';
 import { simState, uiState } from '../core/state.js';
 import { formatNumber } from '../simulation/utils.js';
 
-export function printLogs(hours) {
+export function printLogs(hours: number): void {
 	const m = Math.trunc(hours * 60);
 	const s = Math.trunc((hours * 60 * 60) % 60);
 	const sStr = (s < 0 ? '-' : '') + abs(s).toString().padStart(2, '0');
@@ -50,7 +50,7 @@ export function printLogs(hours) {
 	flushLog();
 }
 
-export function stageLog(...args) {
+export function stageLog(...args: string[]): void {
 	const msg = args.join('');
 	simState.logLines.push('  ' + msg);
 	if (simState.logLines.length > MAX_LOG_LINES) simState.logLines.shift();
@@ -58,9 +58,9 @@ export function stageLog(...args) {
 	simState.logDirty = true;
 }
 
-function dedupeFrames(lines) {
-	const frames = [];
-	let cur = [];
+function dedupeFrames(lines: string[]): string[] {
+	const frames: string[][] = [];
+	let cur: string[] = [];
 
 	for (const line of lines) {
 		if (line.startsWith('  Time:')) {
@@ -72,8 +72,8 @@ function dedupeFrames(lines) {
 	}
 	if (cur.length) frames.push(cur);
 
-	const out = [];
-	let lastKey = null;
+	const out: string[] = [];
+	let lastKey: string | null = null;
 
 	for (const frame of frames) {
 		const key = frame.join('\n');
@@ -86,7 +86,7 @@ function dedupeFrames(lines) {
 	return out;
 }
 
-export function flushLog() {
+export function flushLog(): void {
 	if (!simState.logDirty || !uiState.logDiv) return;
 	uiState.logDiv.elt.textContent = simState.logLines.join('\n');
 	uiState.logDiv.elt.scrollTop = uiState.logDiv.elt.scrollHeight;

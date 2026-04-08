@@ -4,59 +4,49 @@ import { Aircraft } from './aircraft.js';
 import { separationPracticeConfig } from '../core/separationPracticeConfig.js';
 import { randBetween } from './utils.js';
 
-export function autoPosition(i, j) {
+export function autoPosition(i: number, j: number): void {
 	const ac1 = simState.aircraftList[i];
 	const ac2 = simState.aircraftList[j];
 
 	simState.aircraftList[j] = new Aircraft({
-		pos: p5.Vector.add(ac1.pos, ASVector.fromXY(0, -getOffset(ac1, ac2))),
+		pos: ASVector.fromXY(ac1.pos.x, ac1.pos.y - getOffset(ac1, ac2)),
 		vel: ac2.vel,
 		halo: ac2.halo,
 		color: ac2.color,
 	});
 }
 
-export function separationPractice() {
+export function separationPractice(): void {
 	separationPracticeConfig();
+	const settings = simState.separationPracticeSettings;
+
+	if (!settings) return;
+
 	const leadTrack = randBetween(0, 360);
 
-	simState.settings.startTimeMins =
-		simState.separationPracticeSettings.startTime;
+	simState.settings.startTimeMins = settings.startTime;
 
 	const ac1 = Aircraft.onHeading({
 		pos: ASVector.fromXY(0, 0),
-		heading: simState.separationPracticeSettings.angle,
-		TAS: simState.separationPracticeSettings.leadSpeed,
+		heading: settings.angle,
+		TAS: settings.leadSpeed,
 		halo: true,
 	});
 	const ac2 = Aircraft.onHeading({
 		pos: ASVector.fromXY(0, 0),
 		heading: 360,
-		TAS:
-			simState.separationPracticeSettings.leadSpeed -
-			simState.separationPracticeSettings.speedDifference,
+		TAS: settings.leadSpeed - settings.speedDifference,
 	});
 
-	const offset = getOffset(
-		ac1,
-		ac2,
-		simState.separationPracticeSettings.separation
-	);
+	const offset = getOffset(ac1, ac2, settings.separation);
 
 	ac1.flyTrack(leadTrack);
-	ac2.pos = ASVector.fromAngle(
-		leadTrack + simState.separationPracticeSettings.angle,
-		-offset
-	);
-	ac2.flyTrack(leadTrack + simState.separationPracticeSettings.angle);
+	ac2.pos = ASVector.fromAngle(leadTrack + settings.angle, -offset);
+	ac2.flyTrack(leadTrack + settings.angle);
 
 	simState.aircraftList = [
 		ac1,
 		ac2,
-		Aircraft.stationary({
-			pos: ASVector.fromXY(0, 0),
-			color: 'gray',
-		}),
 	];
 	simState.stats = simState.separationPracticeStats;
 	simState.proximities = simState.separationPracticeProximities;
@@ -65,6 +55,10 @@ export function separationPractice() {
 	uiState.displayPracticeAnswerButton = true;
 }
 
-function getOffset(ac1, ac2, dist = 5) {
-	return abs(dist / sin(p5.Vector.sub(ac2.trk, ac1.trk).asHeading()));
+function getOffset(ac1: Aircraft, ac2: Aircraft, dist = 5): number {
+	const relativeTrack = ASVector.fromXY(
+		ac2.trk.x - ac1.trk.x,
+		ac2.trk.y - ac1.trk.y,
+	);
+	return abs(dist / sin(relativeTrack.asHeading()));
 }

@@ -2,8 +2,9 @@ import { simState } from './state.js';
 import { randBetween } from '../simulation/utils.js';
 import { Stat } from '../simulation/stat.js';
 import { Proximity } from '../simulation/proximity.js';
+import { ASVector } from '../math/asvector.js';
 
-export function separationPracticeConfig() {
+export function separationPracticeConfig(): void {
 	simState.separationPracticeSettings = {
 		startTime: randBetween(-5.5, -6),
 		separation: randBetween(4.5, 5.5),
@@ -18,8 +19,8 @@ export function separationPracticeConfig() {
 	];
 
 	simState.separationPracticeProximities = [
-		Proximity.create(0, 2, 'Front CRR'),
-		Proximity.create(1, 2, 'Back CRR'),
-		Proximity.create(0, 1, 'Separation'),
+		Proximity.acToXY({ ac1: 0, x: 0, y: 0, name: 'Front CRR' }),
+		Proximity.acToXY({ ac1: 1, x: 0, y: 0, name: 'Back CRR' }),
+		Proximity.acToAc({ ac1: 0, ac2: 1, name: 'Separation' }),
 	];
 }

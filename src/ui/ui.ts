@@ -1,12 +1,12 @@
 import { simState, uiState } from '../core/state.js';
 
-export function createUI() {
+export function createUI(): void {
 	uiState.canvasDiv = createDiv()
 		.style('flex', '1')
 		.style('min-width', '0')
 		.style('min-height', '0')
 		.style('position', 'relative')
-		.style('cursor', simState.rngBrgMode);
+		.style('cursor', simState.rngBrgMode ? 'none' : '');
 	uiState.logDiv = createDiv()
 		.style('width', '100%')
 		.style(
@@ -26,27 +26,27 @@ export function createUI() {
 	uiState.gridCheckbox = createPersistentCheckbox('Show Grid', 'showGrid');
 	uiState.ringsCheckbox = createPersistentCheckbox('Show Rings', 'showRings');
 
-	uiState.vectorMinsInput = createSelect().parent(uiState.controlsDiv);
+	uiState.vectorMinsInput = createSelect().parent(uiState.controlsDiv!);
 	for (let i of [0, 1, 2, 4, 8]) {
-		uiState.vectorMinsInput.option(i);
+		uiState.vectorMinsInput!.option(i);
 	}
-	uiState.vectorMinsInput.selected(1);
+	uiState.vectorMinsInput!.selected(1);
 
 	uiState.rngBrgButton = createButton('RNG/BRG')
-		.parent(uiState.controlsDiv)
+		.parent(uiState.controlsDiv!)
 		.mouseClicked(() => {
 			simState.rngBrgMode = true;
-			uiState.canvasDiv.style('cursor', 'none');
+			uiState.canvasDiv?.style('cursor', 'none');
 		});
 
 	uiState.rngBrgLabel = createInput()
-		.parent(uiState.controlsDiv)
+		.parent(uiState.controlsDiv!)
 		.size(80)
 		.attribute('disabled', 'true')
 		.style('color', 'black');
 
 	uiState.practiceAnswerButton = createButton('Show Answer')
-		.parent(uiState.controlsDiv)
+		.parent(uiState.controlsDiv!)
 		.style('display', uiState.displayPracticeAnswerButton ? '' : 'none')
 		.mouseClicked(() => {
 			simState.settings.playbackSpeed = 20;
@@ -55,24 +55,29 @@ export function createUI() {
 		});
 }
 
-export function handleWindowResized() {
+export function handleWindowResized(): void {
+	if (!uiState.canvas || !uiState.canvasDiv || !uiState.logDiv) return;
+
 	resizeCanvas(
 		uiState.canvasDiv.elt.clientWidth,
-		uiState.canvasDiv.elt.clientHeight
+		uiState.canvasDiv.elt.clientHeight,
 	);
 	uiState.canvas.style('width', '100%');
 	uiState.canvas.style('height', '100%');
 	uiState.logDiv.elt.scrollTop = uiState.logDiv.elt.scrollHeight;
 }
 
-function createPersistentCheckbox(label, storageKey) {
+function createPersistentCheckbox(
+	label: string,
+	storageKey: string,
+): P5CheckboxElement {
 	const checked = localStorage.getItem(storageKey) === 'true';
 	const checkbox = createCheckbox(`\t${label}`, checked)
-		.parent(uiState.controlsDiv)
+		.parent(uiState.controlsDiv!)
 		.style('color', '#ccc')
 		.style('font-family', 'system-ui');
 	checkbox.changed(() => {
-		localStorage.setItem(storageKey, checkbox.checked());
+		localStorage.setItem(storageKey, String(checkbox.checked()));
 	});
 	return checkbox;
 }

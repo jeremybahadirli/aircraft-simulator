@@ -14,31 +14,40 @@ import { autoPosition } from './simulation/positioning.js';
 import { formatNumber, getMousePos } from './simulation/utils.js';
 import { createUI, handleWindowResized } from './ui/ui.js';
 
-function setup() {
+declare global {
+	interface Window {
+		setup: typeof setup;
+		draw: typeof draw;
+		windowResized: typeof windowResized;
+		autoPosition: typeof autoPosition;
+	}
+}
+
+function setup(): void {
 	angleMode(DEGREES);
 
 	initConfig();
 	createUI();
-	uiState.canvas = createCanvas().parent(uiState.canvasDiv);
+	uiState.canvas = createCanvas().parent(uiState.canvasDiv!);
 	handleWindowResized();
 
 	const defaultPlaybackSpeed = simState.settings.playbackSpeed;
-	uiState.canvas.mouseClicked(() => {
+	uiState.canvas!.mouseClicked(() => {
 		if (simState.rngBrgMode) {
 			if (simState.rngBrgPos === null) {
 				simState.rngBrgPos = getMousePos(mouseX, mouseY);
 			} else {
 				const newPos = getMousePos(mouseX, mouseY);
-				const rngBrg = p5.Vector.sub(newPos, simState.rngBrgPos);
-				uiState.rngBrgLabel.value(
+				const rngBrg = newPos.copy().sub(simState.rngBrgPos);
+				uiState.rngBrgLabel?.value(
 					`${rngBrg.mag().toFixed(1)} NM / ${
 						formatNumber(rngBrg.asHeading(), 0, 3).n
-					}º`
+					}º`,
 				);
 
 				simState.rngBrgMode = false;
 				simState.rngBrgPos = null;
-				uiState.canvasDiv.style('cursor', '');
+				uiState.canvasDiv?.style('cursor', '');
 			}
 		} else {
 			simState.settings.playbackSpeed =
@@ -55,9 +64,10 @@ function setup() {
 	simState.proximities.forEach((l) => l.updateProximity(0));
 
 	printLogs(simState.time);
+	console.log(simState.aircraftList[0].getIas())
 }
 
-function draw() {
+function draw(): void {
 	const deltaHours =
 		(deltaTime / MILLIS_PER_HOUR) * simState.settings.playbackSpeed;
 	const nextTime = simState.time + deltaHours;
@@ -75,7 +85,7 @@ function draw() {
 			a.updatePosition(nextTime - simState.lastUpdate);
 		});
 		simState.proximities.forEach((l) =>
-			l.updateProximity(nextTime - simState.lastUpdate)
+			l.updateProximity(nextTime - simState.lastUpdate),
 		);
 
 		simState.lastUpdate = nextTime;
@@ -85,15 +95,15 @@ function draw() {
 
 	drawCanvas();
 	if (simState.rngBrgMode) drawCrosshair();
-	if (uiState.gridCheckbox.checked()) drawGrid();
-	if (uiState.ringsCheckbox.checked()) drawRings();
-	if (simState.wind.vel.mag() > 0) drawWind();
+	if (uiState.gridCheckbox?.checked()) drawGrid();
+	if (uiState.ringsCheckbox?.checked()) drawRings();
+	if (simState.atmosphere.windVel.mag() > 0) drawWind();
 	[...simState.aircraftList].reverse().forEach((a) => drawAircraft(a));
 
 	simState.time = nextTime;
 }
 
-function windowResized() {
+function windowResized(): void {
 	handleWindowResized();
 }
 
