@@ -17,7 +17,7 @@ export function createUI(): void {
 		.style('overflow', 'auto')
 		.style('color', '#ccc')
 		.style('background-color', '#111')
-		.style('font-family', 'ERAMv300')
+		.style('font-family', 'monospace, ui-monospace')
 		.style('font-size', '16px');
 	uiState.controlsDiv = createDiv()
 		.style('display', 'flex')

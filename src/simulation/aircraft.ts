@@ -1,121 +1,187 @@
 import { simState } from '../core/state.js';
 import { ASVector } from '../math/asvector.js';
+import { SpeedConversions } from '../math/speedConversions.js';
+import type { SpeedSpec } from './speed.js';
 import { resolveTas } from './speed.js';
 import { createVelocityDirect, createVelocityOnTrack } from './utils.js';
-import type { SpeedSpec } from './speed.js';
-import { SpeedConversions } from '../math/speedConversions.js';
 
-interface AircraftOptions {
+export type DatablockSlot = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9;
+export interface AircraftDisplay {
+	color: string;
+	halo: boolean;
+	haloRadiusNm: number;
+	showDatablock: boolean;
+	datablockSlot: DatablockSlot;
+}
+type AircraftDisplayOptions = Partial<AircraftDisplay>;
+
+const DEFAULT_AIRCRAFT_DISPLAY: AircraftDisplay = {
+	color: 'yellow',
+	halo: false,
+	haloRadiusNm: 5,
+	showDatablock: true,
+	datablockSlot: 1,
+};
+const MAX_CIDS = 1000;
+const MAX_CALLSIGNS = MAX_CIDS * 26 * 26;
+const RANDOM_ID_ATTEMPTS = 1000;
+const allocatedCids = new Set<string>();
+const allocatedCallsigns = new Set<string>();
+
+interface BaseAircraftOptions {
+	cid?: string;
+	callsign?: string;
+	datablockFourthLine?: string;
 	pos: ASVector;
-	vel: ASVector;
 	alt?: number;
-	halo?: boolean;
-	color?: string;
+	display?: AircraftDisplayOptions;
 }
 
-interface HeadingAircraftOptions {
-	pos: ASVector;
+type AircraftOptions = BaseAircraftOptions & {
+	vel: ASVector;
+};
+
+type HeadingAircraftOptions = BaseAircraftOptions & {
 	heading: number;
 	speed: SpeedSpec;
-	alt?: number;
-	halo?: boolean;
-	color?: string;
-}
+};
 
-interface TrackAircraftOptions {
-	pos: ASVector;
+type TrackAircraftOptions = BaseAircraftOptions & {
 	track: number;
 	speed: SpeedSpec;
-	alt?: number;
-	halo?: boolean;
-	color?: string;
-}
+};
 
-interface DirectAircraftOptions {
-	pos: ASVector;
+type DirectAircraftOptions = BaseAircraftOptions & {
 	fix: ASVector;
 	speed: SpeedSpec;
-	alt?: number;
-	halo?: boolean;
-	color?: string;
-}
+};
 
 export class Aircraft {
+	cid: string;
+	callsign: string;
+	fourthLine: string;
 	pos: ASVector;
 	vel: ASVector;
 	alt: number;
-	halo: boolean;
-	color: string;
+	display: AircraftDisplay;
 	prevPos?: ASVector;
 	prevVel?: ASVector;
 
 	constructor({
+		cid,
+		callsign,
+		datablockFourthLine = 'KDFW',
 		pos,
 		vel,
-		alt = 24000,
-		halo = false,
-		color = 'yellow',
+		alt = 240,
+		display,
 	}: AircraftOptions) {
+		const normalizedCid = cid === undefined ? generateCid() : normalizeCid(cid);
+		const normalizedCallsign =
+			callsign === undefined
+				? generateCallsign()
+				: normalizeDatablockText('Callsign', callsign, 3, 7);
+
+		assertIdentityAvailable('CID', normalizedCid, allocatedCids);
+		assertIdentityAvailable(
+			'Callsign',
+			normalizedCallsign,
+			allocatedCallsigns,
+		);
+		allocatedCids.add(normalizedCid);
+		allocatedCallsigns.add(normalizedCallsign);
+
+		this.cid = normalizedCid;
+		this.callsign = normalizedCallsign;
+		this.fourthLine = normalizeDatablockText(
+			'Datablock fourth line',
+			datablockFourthLine,
+			1,
+			8,
+		);
 		this.pos = pos;
 		this.vel = vel;
 		this.alt = alt;
-		this.halo = halo;
-		this.color = color;
+		this.display = { ...DEFAULT_AIRCRAFT_DISPLAY, ...display };
 	}
 
 	static onHeading({
+		cid,
+		callsign,
+		datablockFourthLine,
 		pos,
 		heading,
 		speed,
 		alt,
-		halo,
-		color,
+		display,
 	}: HeadingAircraftOptions): Aircraft {
 		return new Aircraft({
+			cid,
+			callsign,
+			datablockFourthLine,
 			pos,
-			vel: ASVector.fromAngle(heading, resolveTas(speed, alt ?? 24000)),
+			vel: ASVector.fromAngle(heading, resolveTas(speed, alt ?? 240)),
 			alt,
-			halo,
-			color,
+			display,
 		});
 	}
 
 	static onTrack({
+		cid,
+		callsign,
+		datablockFourthLine,
 		pos,
 		track,
 		speed,
 		alt,
-		halo,
-		color,
+		display,
 	}: TrackAircraftOptions): Aircraft {
 		return new Aircraft({
+			cid,
+			callsign,
+			datablockFourthLine,
 			pos,
-			vel: createVelocityOnTrack(track, resolveTas(speed, alt ?? 24000)),
+			vel: createVelocityOnTrack(track, resolveTas(speed, alt ?? 240)),
 			alt,
-			halo,
-			color,
+			display,
 		});
 	}
 
 	static direct({
+		cid,
+		callsign,
+		datablockFourthLine,
 		pos,
 		fix,
 		speed,
 		alt,
-		halo,
-		color,
+		display,
 	}: DirectAircraftOptions): Aircraft {
 		return new Aircraft({
+			cid,
+			callsign,
+			datablockFourthLine,
 			pos,
-			vel: createVelocityDirect(
-				fix,
-				pos,
-				resolveTas(speed, alt ?? 24000),
-			),
+			vel: createVelocityDirect(fix, pos, resolveTas(speed, alt ?? 240)),
 			alt,
-			halo,
-			color,
+			display,
 		});
+	}
+
+	get color(): string {
+		return this.display.color;
+	}
+
+	set color(value: string) {
+		this.display.color = value;
+	}
+
+	get halo(): boolean {
+		return this.display.halo;
+	}
+
+	set halo(value: boolean) {
+		this.display.halo = value;
 	}
 
 	get tas(): number {
@@ -183,5 +249,108 @@ export class Aircraft {
 
 	maintain(speed: SpeedSpec): void {
 		this.tas = resolveTas(speed, this.alt);
+	}
+}
+
+export function resetAircraftIdentityRegistry(): void {
+	allocatedCids.clear();
+	allocatedCallsigns.clear();
+}
+
+function generateCid(): string {
+	if (allocatedCids.size >= MAX_CIDS) {
+		throw new Error('No unique 3-digit CIDs remain.');
+	}
+
+	for (let i = 0; i < RANDOM_ID_ATTEMPTS; i++) {
+		const cid = generateRandomDigits(3);
+		if (!allocatedCids.has(cid)) return cid;
+	}
+
+	for (let i = 0; i < MAX_CIDS; i++) {
+		const cid = i.toString().padStart(3, '0');
+		if (!allocatedCids.has(cid)) return cid;
+	}
+
+	throw new Error('No unique 3-digit CIDs remain.');
+}
+
+function generateCallsign(): string {
+	if (allocatedCallsigns.size >= MAX_CALLSIGNS) {
+		throw new Error('No unique generated callsigns remain.');
+	}
+
+	for (let i = 0; i < RANDOM_ID_ATTEMPTS; i++) {
+		const callsign = `N${generateRandomDigits(3)}${generateRandomLetters(2)}`;
+		if (!allocatedCallsigns.has(callsign)) return callsign;
+	}
+
+	for (let number = 0; number < MAX_CIDS; number++) {
+		for (let firstLetter = 0; firstLetter < 26; firstLetter++) {
+			for (let secondLetter = 0; secondLetter < 26; secondLetter++) {
+				const callsign = `N${number
+					.toString()
+					.padStart(3, '0')}${letterAt(firstLetter)}${letterAt(
+					secondLetter,
+				)}`;
+				if (!allocatedCallsigns.has(callsign)) return callsign;
+			}
+		}
+	}
+
+	throw new Error('No unique generated callsigns remain.');
+}
+
+function generateRandomDigits(length: number): string {
+	let value = '';
+	for (let i = 0; i < length; i++) {
+		value += Math.floor(Math.random() * 10).toString();
+	}
+	return value;
+}
+
+function generateRandomLetters(length: number): string {
+	const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	let value = '';
+	for (let i = 0; i < length; i++) {
+		value += letters[Math.floor(Math.random() * letters.length)];
+	}
+	return value;
+}
+
+function letterAt(index: number): string {
+	return String.fromCharCode('A'.charCodeAt(0) + index);
+}
+
+function normalizeCid(cid: string): string {
+	const normalized = cid.trim();
+	if (!/^\d{3}$/.test(normalized)) {
+		throw new Error('CID must be exactly 3 digits.');
+	}
+	return normalized;
+}
+
+function normalizeDatablockText(
+	label: string,
+	value: string,
+	minLength: number,
+	maxLength: number,
+): string {
+	const normalized = value.trim().toUpperCase();
+	if (normalized.length < minLength || normalized.length > maxLength) {
+		throw new Error(
+			`${label} must be ${minLength}-${maxLength} characters.`,
+		);
+	}
+	return normalized;
+}
+
+function assertIdentityAvailable(
+	label: string,
+	value: string,
+	allocatedValues: Set<string>,
+): void {
+	if (allocatedValues.has(value)) {
+		throw new Error(`${label} ${value} is already assigned.`);
 	}
 }

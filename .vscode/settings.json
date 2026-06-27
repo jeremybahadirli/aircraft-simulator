@@ -1,0 +1,11 @@
+{
+	"files.exclude": {
+		"**/.vscode/chrome-debug-profile": true
+	},
+	"files.watcherExclude": {
+		"**/.vscode/chrome-debug-profile/**": true
+	},
+	"search.exclude": {
+		"**/.vscode/chrome-debug-profile/**": true
+	}
+}

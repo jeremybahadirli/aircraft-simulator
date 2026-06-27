@@ -1,19 +1,14 @@
+import { separationPracticeConfig } from '../core/separationPracticeConfig.js';
 import { simState, uiState } from '../core/state.js';
 import { ASVector } from '../math/asvector.js';
-import { Aircraft } from './aircraft.js';
-import { separationPracticeConfig } from '../core/separationPracticeConfig.js';
+import { Aircraft, resetAircraftIdentityRegistry } from './aircraft.js';
 import { randBetween } from './utils.js';
 
 export function autoPosition(i: number, j: number): void {
 	const ac1 = simState.aircraftList[i];
 	const ac2 = simState.aircraftList[j];
 
-	simState.aircraftList[j] = new Aircraft({
-		pos: ASVector.fromXY(ac1.pos.x, ac1.pos.y - getOffset(ac1, ac2)),
-		vel: ac2.vel,
-		halo: ac2.halo,
-		color: ac2.color,
-	});
+	ac2.pos = ASVector.fromXY(ac1.pos.x, ac1.pos.y - getOffset(ac1, ac2));
 }
 
 export function separationPractice(): void {
@@ -21,6 +16,8 @@ export function separationPractice(): void {
 	const settings = simState.separationPracticeSettings;
 
 	if (!settings) return;
+
+	resetAircraftIdentityRegistry();
 
 	const leadTrack = randBetween(0, 360);
 
@@ -30,12 +27,17 @@ export function separationPractice(): void {
 		pos: ASVector.fromXY(0, 0),
 		heading: settings.angle,
 		speed: { unit: 'tas', value: settings.leadSpeed },
-		halo: true,
+		display: {
+			halo: true,
+		},
 	});
 	const ac2 = Aircraft.onHeading({
 		pos: ASVector.fromXY(0, 0),
 		heading: 360,
-		speed: { unit: 'tas', value: settings.leadSpeed - settings.speedDifference },
+		speed: {
+			unit: 'tas',
+			value: settings.leadSpeed - settings.speedDifference,
+		},
 	});
 
 	const offset = getOffset(ac1, ac2, settings.separation);
@@ -44,10 +46,7 @@ export function separationPractice(): void {
 	ac2.pos = ASVector.fromAngle(leadTrack + settings.angle, -offset);
 	ac2.flyTrack(leadTrack + settings.angle);
 
-	simState.aircraftList = [
-		ac1,
-		ac2,
-	];
+	simState.aircraftList = [ac1, ac2];
 	simState.stats = simState.separationPracticeStats;
 	simState.proximities = simState.separationPracticeProximities;
 	simState.events = [];

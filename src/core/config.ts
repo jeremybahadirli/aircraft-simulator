@@ -1,48 +1,55 @@
 import { ASVector } from '../math/asvector.js';
-import { SpeedConversions } from '../math/speedConversions.js';
-import { Aircraft } from '../simulation/aircraft.js';
+import {
+	Aircraft,
+	resetAircraftIdentityRegistry,
+} from '../simulation/aircraft.js';
 import { Atmosphere } from '../simulation/atmosphere.js';
-import { autoPosition } from '../simulation/positioning.js';
-import { Proximity } from '../simulation/proximity.js';
-import { Stat } from '../simulation/stat.js';
+import { separationPractice } from '../simulation/positioning.js';
 import { postConfig, preConfig, simState } from './state.js';
 
 export function initConfig(): void {
 	preConfig();
+	resetAircraftIdentityRegistry();
 
 	simState.settings = {
-		playbackSpeed: 10,
-		updateFrequency: 0,
+		playbackSpeed: 1,
+		updateFrequency: 12,
 		startTimeMins: 0,
 		vRange: 100,
-		statsDecimalPlaces: 1,
-		proximityDecimalPlaces: 2,
+		statsDecimalPlaces: 0,
+		proximityDecimalPlaces: 1,
 	};
 
 	simState.atmosphere = new Atmosphere({});
 
 	simState.aircraftList = [
 		Aircraft.onTrack({
+			pos: ASVector.fromXY(-20, 15),
+			track: 180,
+			alt: 200,
+			speed: { unit: 'tas', value: 400 },
+			display: {
+				halo: true,
+				datablockSlot: 1,
+			},
+		}),
+		Aircraft.onTrack({
 			pos: ASVector.fromXY(0, 0),
-			track: 270,
-			alt: 20000,
-			speed: { unit: 'ias', value: 300 },
-			halo: true,
-		}),
-		Aircraft.onHeading({
-			pos: ASVector.fromXY(-10, 0),
-			heading: 270,
-			alt: 20000,
-			speed: { unit: 'ias', value: 290 },
+			track: 290,
+			alt: 200,
+			speed: { unit: 'tas', value: 400 },
+			display: {
+				datablockSlot: 1,
+			},
 		}),
 	];
 
-	simState.stats = [Stat.create(0), Stat.create(1)];
+	// simState.stats = [Stat.create(0), Stat.create(1)];
 
-	simState.proximities = [
-		Proximity.acToAc({ ac1: 0, ac2: 1 }),
-		Proximity.acToFRD({ ac1: 1, r: 0, d: 10 }),
-	];
+	// simState.proximities = [
+	// 	Proximity.acToAc({ ac1: 0, ac2: 1 }),
+	// 	Proximity.acToFRD({ ac1: 1, r: 0, d: 10 }),
+	// ];
 
 	simState.events = [
 		// 	{
@@ -64,11 +71,11 @@ export function initConfig(): void {
 	];
 
 	// Ignores config.js, uses separationPracticeConfig.js
-	// separationPractice();
+	separationPractice();
 
 	// Normally, ac0 starts at (0,0) with a hdg
 	// ac1 placed at (0,0) to be autopositioned with hdg=0
-	autoPosition(0, 1);
+	// autoPosition(0, 1);
 
 	postConfig();
 }

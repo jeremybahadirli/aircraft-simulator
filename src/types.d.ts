@@ -80,6 +80,10 @@ declare const mouseX: number;
 declare const mouseY: number;
 declare const width: number;
 
+declare const ROUND: number;
+declare const SQUARE: number;
+declare const PROJECT: number;
+
 declare function abs(value: number): number;
 declare function angleMode(mode: number): void;
 declare function background(color: string): void;
@@ -106,6 +110,7 @@ declare function line(
 declare function max(...values: number[]): number;
 declare function min(...values: number[]): number;
 declare function noFill(): void;
+declare function noStroke(): void;
 declare function point(x: number, y: number): void;
 declare function pop(): void;
 declare function push(): void;
@@ -118,8 +123,13 @@ declare function sin(angle: number): number;
 declare function sqrt(value: number): number;
 declare function stroke(color: string): void;
 declare function strokeWeight(weight: number): void;
+declare function strokeCap(cap: ROUND | SQUARE | PROJECT): void;
 declare function text(value: string, x: number, y: number): void;
+declare function textFont(font: string): void;
 declare function textSize(size: number): void;
+declare function textWidth(value: string): number;
+declare function textAscent(value: string): number;
+declare function textDescent(value: string): number;
 declare function translate(vector: p5.Vector): void;
 declare function translate(x: number, y: number): void;
 declare function triangle(

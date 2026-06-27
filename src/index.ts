@@ -1,6 +1,7 @@
 import { initConfig } from './core/config.js';
 import { MILLIS_PER_HOUR } from './core/constants.js';
 import { simState, uiState } from './core/state.js';
+import { createViewport } from './core/viewport.js';
 import { printLogs } from './logging/logging.js';
 import {
 	drawAircraft,
@@ -92,12 +93,16 @@ function draw(): void {
 	}
 	if (simState.settings.playbackSpeed !== 0) printLogs(nextTime);
 
-	drawCanvas();
-	if (simState.rngBrgMode) drawCrosshair();
-	if (uiState.gridCheckbox?.checked()) drawGrid();
-	if (uiState.ringsCheckbox?.checked()) drawRings();
-	if (simState.atmosphere.windVel.mag() > 0) drawWind();
-	[...simState.aircraftList].reverse().forEach((a) => drawAircraft(a));
+	const viewport = createViewport();
+
+	drawCanvas(viewport);
+	if (simState.rngBrgMode) drawCrosshair(viewport);
+	if (uiState.gridCheckbox?.checked()) drawGrid(viewport);
+	if (uiState.ringsCheckbox?.checked()) drawRings(viewport);
+	if (simState.atmosphere.windVel.mag() > 0) drawWind(viewport);
+	for (let i = simState.aircraftList.length - 1; i >= 0; i--) {
+		drawAircraft(simState.aircraftList[i], i, viewport);
+	}
 
 	simState.time = nextTime;
 }

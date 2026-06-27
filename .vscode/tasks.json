@@ -43,7 +43,7 @@
 		{
 			"label": "debug:prepare-chrome",
 			"dependsOrder": "sequence",
-			"dependsOn": ["build", "debug:reload-chrome"]
+			"dependsOn": ["serve", "build", "debug:reload-chrome"]
 		}
 	]
 }

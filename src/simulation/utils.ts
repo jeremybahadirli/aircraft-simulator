@@ -1,6 +1,7 @@
 import { MAX_DIGITS } from '../core/constants.js';
 import { haltWithError } from '../core/errors.js';
 import { simState } from '../core/state.js';
+import { createViewport } from '../core/viewport.js';
 import { ASVector } from '../math/asvector.js';
 import type { Aircraft } from './aircraft.js';
 import type { Atmosphere } from './atmosphere.js';
@@ -50,7 +51,7 @@ export function closestApproach(ac1: Aircraft, ac2: Aircraft): number {
 
 	if (relativeVelocity.mag() === 0) return relativePosition.mag();
 
-	const t = max(
+	const t = Math.max(
 		-p5.Vector.dot(relativePosition, relativeVelocity) /
 			relativeVelocity.magSq(),
 		0,
@@ -83,8 +84,8 @@ export function formatNumber(
 	let [intPart, fracPart = ''] = abs(n).toFixed(preferredDecimals).split('.');
 	intPart = intPart.padStart(leadingZeroes, '0');
 
-	const maxDecimals = max(0, MAX_DIGITS - intPart.length);
-	const cappedDecimals = min(preferredDecimals, maxDecimals);
+	const maxDecimals = Math.max(0, MAX_DIGITS - intPart.length);
+	const cappedDecimals = Math.min(preferredDecimals, maxDecimals);
 
 	if (cappedDecimals !== preferredDecimals) {
 		[intPart, fracPart = ''] = abs(n).toFixed(cappedDecimals).split('.');
@@ -105,15 +106,13 @@ export function formatNumber(
 }
 
 export function getMousePos(x = mouseX, y = mouseY): ASVector {
-	const posX = ((x - width / 2) * simState.settings.vRange) / height;
-	const posY = (-(y - height / 2) * simState.settings.vRange) / height;
+	const viewport = createViewport();
+	const pos = viewport.canvasToWorld(x, y);
 
-	const roundedX = Math.round(posX * 10) / 10;
-	const roundedY = Math.round(posY * 10) / 10;
+	const roundedX = Math.round(pos.x * 10) / 10;
+	const roundedY = Math.round(pos.y * 10) / 10;
 
-	return keyIsPressed
-		? ASVector.fromXY(roundedX, roundedY)
-		: ASVector.fromXY(posX, posY);
+	return keyIsPressed ? ASVector.fromXY(roundedX, roundedY) : pos;
 }
 
 export function randBetween(minValue: number, maxValue: number): number {

@@ -21,6 +21,8 @@ export class Atmosphere {
 	}
 
 	getPressureAtAltitude(altitude: number): number {
+		altitude *= 100;
+
 		const h = altitude * FT_TO_M;
 
 		// Layer 0: sea level to 11,000 m
@@ -44,6 +46,8 @@ export class Atmosphere {
 	}
 
 	getTemperatureCAtAltitude(altitude: number): number {
+		altitude *= 100;
+
 		const h = altitude * FT_TO_M;
 
 		// Layer 0: sea level to 11,000 m

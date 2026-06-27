@@ -61,7 +61,7 @@ export class Proximity {
 		ac1,
 		r,
 		d,
-		name = `Aircraft ${ac1}-(${r}º ${d} NM)`,
+		name = `Aircraft ${ac1}-(${r}° ${d} NM)`,
 	}: AcToFRDOptions): Proximity {
 		return new Proximity(name, ac1, undefined, ASVector.fromAngle(r, d));
 	}
@@ -94,7 +94,7 @@ export class Proximity {
 		}
 
 		this.proximity = p5.Vector.dist(a1.pos, currentTargetPos);
-		this.lowestProximity = min(this.lowestProximity, this.proximity);
+		this.lowestProximity = Math.min(this.lowestProximity, this.proximity);
 
 		const prevPos1 = a1.prevPos ?? a1.pos;
 		const prevVel1 = a1.prevVel ?? a1.vel;
@@ -120,7 +120,7 @@ export class Proximity {
 			);
 
 			const minThisStep = rStar.mag();
-			this.lowestProximity = min(this.lowestProximity, minThisStep);
+			this.lowestProximity = Math.min(this.lowestProximity, minThisStep);
 		}
 	}
 }

@@ -8,7 +8,7 @@
 			"url": "http://127.0.0.1:4173",
 			"webRoot": "${workspaceFolder}",
 			"preLaunchTask": "debug:prepare-chrome",
-			"userDataDir": "${workspaceFolder}/.vscode/chrome-debug-profile"
+			"userDataDir": "${env:TMPDIR}/aircraft-simulator-chrome-debug-profile"
 		}
 	]
 }
