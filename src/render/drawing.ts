@@ -213,7 +213,6 @@ function drawAircraftDatablock(ac: Aircraft, viewport: Viewport): void {
 		DATABLOCK_PADDING_PX * 2;
 
 	const leaderEndView = getLeaderEnd(anchorView, ac.display.datablockSlot);
-	console.log(leaderEndView);
 	const leaderStartView = getLineStart(anchorView, leaderEndView);
 
 	const originView = getDatablockOrigin(
@@ -382,7 +381,6 @@ function getDatablockOrigin(
 
 function getLeaderEnd(anchorView: ASVector, slot: DatablockSlot): ASVector {
 	let leaderDirection;
-	console.log(slot);
 	switch (slot) {
 		case 1:
 			leaderDirection = 315;
@@ -409,7 +407,6 @@ function getLeaderEnd(anchorView: ASVector, slot: DatablockSlot): ASVector {
 			leaderDirection = 135;
 			break;
 	}
-	console.log(leaderDirection);
 	return anchorView
 		.copy()
 		.add(ASVector.fromAngle(leaderDirection, LEADER_LINE_PX));

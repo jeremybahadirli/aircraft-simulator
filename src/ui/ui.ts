@@ -1,4 +1,10 @@
+import { executeCommand } from '../core/commands.js';
 import { simState, uiState } from '../core/state.js';
+
+const MAX_COMMAND_OUTPUT_LINES = 100;
+const CONSOLE_FONT_SIZE = '16px';
+const CONSOLE_HEIGHT_LH_PADDING = 3;
+const COMMAND_PANEL_FONT = 'ERAMv300, monospace, ui-monospace';
 
 export function createUI(): void {
 	uiState.canvasDiv = createDiv()
@@ -7,18 +13,71 @@ export function createUI(): void {
 		.style('min-height', '0')
 		.style('position', 'relative')
 		.style('cursor', simState.rngBrgMode ? 'none' : '');
-	uiState.logDiv = createDiv()
+	uiState.consoleDiv = createDiv()
+		.style('display', 'flex')
 		.style('width', '100%')
 		.style(
 			'height',
-			`${simState.stats.length + simState.proximities.length + 3}lh`,
+			`${
+				simState.stats.length +
+				simState.proximities.length +
+				CONSOLE_HEIGHT_LH_PADDING
+			}lh`,
 		)
+		.style('min-height', '96px')
+		.style('background-color', '#111');
+	uiState.logDiv = createDiv()
+		.parent(uiState.consoleDiv)
+		.style('flex', '1 1 50%')
+		.style('min-width', '0')
+		.style('height', '100%')
+		.style('box-sizing', 'border-box')
 		.style('white-space', 'pre')
 		.style('overflow', 'auto')
 		.style('color', '#ccc')
 		.style('background-color', '#111')
 		.style('font-family', 'monospace, ui-monospace')
-		.style('font-size', '16px');
+		.style('font-size', CONSOLE_FONT_SIZE);
+	uiState.commandLineDiv = createDiv()
+		.parent(uiState.consoleDiv)
+		.style('flex', '1 1 50%')
+		.style('min-width', '0')
+		.style('height', '100%')
+		.style('box-sizing', 'border-box')
+		.style('display', 'flex')
+		.style('flex-direction', 'column')
+		.style('border-left', '1px solid #333')
+		.style('background-color', '#111')
+		.style('color', '#ccc')
+		.style('font-family', COMMAND_PANEL_FONT)
+		.style('font-size', CONSOLE_FONT_SIZE);
+	uiState.commandOutputDiv = createDiv()
+		.parent(uiState.commandLineDiv)
+		.style('flex', '1')
+		.style('min-height', '0')
+		.style('box-sizing', 'border-box')
+		.style('padding', '4px 6px')
+		.style('white-space', 'pre-wrap')
+		.style('overflow', 'auto')
+		.style('font-family', COMMAND_PANEL_FONT)
+		.style('font-size', CONSOLE_FONT_SIZE);
+	uiState.commandInput = createInput()
+		.parent(uiState.commandLineDiv)
+		.attribute('autocomplete', 'off')
+		.attribute('spellcheck', 'false')
+		.attribute('aria-label', 'Command line')
+		.style('width', '100%')
+		.style('box-sizing', 'border-box')
+		.style('border', '0')
+		.style('border-top', '1px solid #333')
+		.style('padding', '3px 6px')
+		.style('outline', 'none')
+		.style('background-color', '#080808')
+		.style('color', '#ccc')
+		.style('font-family', COMMAND_PANEL_FONT)
+		.style('font-size', CONSOLE_FONT_SIZE);
+	uiState.commandInput.elt.addEventListener('keydown', handleCommandKeyDown);
+	window.addEventListener('keydown', handleGlobalCommandLineKeyDown, true);
 	uiState.controlsDiv = createDiv()
 		.style('display', 'flex')
 		.style('gap', '16px')
@@ -65,6 +124,83 @@ export function handleWindowResized(): void {
 	uiState.canvas.style('width', '100%');
 	uiState.canvas.style('height', '100%');
 	uiState.logDiv.elt.scrollTop = uiState.logDiv.elt.scrollHeight;
+	if (uiState.commandOutputDiv) {
+		uiState.commandOutputDiv.elt.scrollTop =
+			uiState.commandOutputDiv.elt.scrollHeight;
+	}
+}
+
+function handleCommandKeyDown(event: KeyboardEvent): void {
+	if (event.key !== 'Enter') return;
+
+	event.preventDefault();
+	submitCommandInput();
+}
+
+function handleGlobalCommandLineKeyDown(event: KeyboardEvent): void {
+	const input = uiState.commandInput?.elt;
+	if (!input || event.target === input || event.defaultPrevented) return;
+	if (event.metaKey || event.ctrlKey || event.altKey || event.isComposing) {
+		return;
+	}
+
+	if (event.key === 'Enter') {
+		event.preventDefault();
+		input.focus();
+		submitCommandInput();
+		return;
+	}
+
+	if (event.key === 'Backspace') {
+		event.preventDefault();
+		input.focus();
+		deleteCommandInputTrailingCharacter(input);
+		return;
+	}
+
+	if (event.key.length !== 1) return;
+
+	event.preventDefault();
+	input.focus();
+	appendCommandInputText(input, event.key);
+}
+
+function submitCommandInput(): void {
+	const command = uiState.commandInput?.value() ?? '';
+	if (command.trim().length === 0) return;
+
+	uiState.commandInput?.value('');
+	const result = executeCommand(command);
+	appendCommandOutput(`> ${command.toUpperCase()}`);
+	appendCommandOutput(`${result.ok ? 'OK' : 'ERR'} ${result.message}`);
+}
+
+function appendCommandInputText(input: HTMLInputElement, value: string): void {
+	const insertAt = input.value.length;
+	input.setRangeText(value, insertAt, insertAt, 'end');
+}
+
+function deleteCommandInputTrailingCharacter(input: HTMLInputElement): void {
+	if (input.value.length === 0) return;
+
+	const deleteAt = input.value.length - 1;
+	input.setRangeText('', deleteAt, input.value.length, 'end');
+}
+
+function appendCommandOutput(line: string): void {
+	uiState.commandOutputLines.push(line);
+	if (uiState.commandOutputLines.length > MAX_COMMAND_OUTPUT_LINES) {
+		uiState.commandOutputLines.splice(
+			0,
+			uiState.commandOutputLines.length - MAX_COMMAND_OUTPUT_LINES,
+		);
+	}
+	if (!uiState.commandOutputDiv) return;
+
+	uiState.commandOutputDiv.elt.textContent =
+		uiState.commandOutputLines.join('\n');
+	uiState.commandOutputDiv.elt.scrollTop =
+		uiState.commandOutputDiv.elt.scrollHeight;
 }
 
 function createPersistentCheckbox(

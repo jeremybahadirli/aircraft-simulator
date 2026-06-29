@@ -20,7 +20,7 @@ const DEFAULT_AIRCRAFT_DISPLAY: AircraftDisplay = {
 	halo: false,
 	haloRadiusNm: 5,
 	showDatablock: true,
-	datablockSlot: 1,
+	datablockSlot: 2,
 };
 const MAX_CIDS = 1000;
 const MAX_CALLSIGNS = MAX_CIDS * 26 * 26;

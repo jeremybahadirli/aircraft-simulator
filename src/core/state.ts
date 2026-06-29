@@ -51,7 +51,12 @@ export interface SimulationState {
 export interface UIState {
 	canvas: P5CanvasElement | null;
 	canvasDiv: P5DivElement | null;
+	consoleDiv: P5DivElement | null;
 	logDiv: P5DivElement | null;
+	commandLineDiv: P5DivElement | null;
+	commandOutputDiv: P5DivElement | null;
+	commandInput: P5InputElement | null;
+	commandOutputLines: string[];
 	controlsDiv: P5DivElement | null;
 	gridCheckbox: P5CheckboxElement | null;
 	ringsCheckbox: P5CheckboxElement | null;
@@ -85,7 +90,12 @@ export const simState: SimulationState = {
 export const uiState: UIState = {
 	canvas: null,
 	canvasDiv: null,
+	consoleDiv: null,
 	logDiv: null,
+	commandLineDiv: null,
+	commandOutputDiv: null,
+	commandInput: null,
+	commandOutputLines: [],
 	controlsDiv: null,
 	gridCheckbox: null,
 	ringsCheckbox: null,
