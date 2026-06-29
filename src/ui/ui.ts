@@ -5,6 +5,20 @@ const CONSOLE_FONT_SIZE = '16px';
 const CONSOLE_HEIGHT_LH_PADDING = 3;
 const COMMAND_PANEL_FONT = 'ERAMv300, monospace, ui-monospace';
 const VECTOR_MINS_OPTIONS: readonly number[] = [0, 1, 2, 4, 8];
+const SHIFT_COMMAND_INPUT_MAP: Readonly<Record<string, string>> = {
+	Digit8: '1',
+	Digit9: '2',
+	Digit0: '3',
+	KeyI: '4',
+	KeyO: '5',
+	KeyP: '6',
+	KeyK: '7',
+	KeyL: '8',
+	Semicolon: '9',
+	Comma: '0',
+	Period: '0',
+	Slash: '/',
+};
 
 export function createUI(): void {
 	uiState.canvasDiv = createDiv()
@@ -143,13 +157,21 @@ function handleGlobalCommandLineKeyDown(event: KeyboardEvent): void {
 		return;
 	}
 
+	const input = uiState.commandInput?.elt;
+	const mappedInputText = getShiftCommandInputText(event);
+	if (input && mappedInputText !== null) {
+		event.preventDefault();
+		input.focus();
+		appendCommandInputText(input, mappedInputText);
+		return;
+	}
+
 	if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
 		event.preventDefault();
 		stepVectorMins(event.key === 'ArrowUp' ? 1 : -1);
 		return;
 	}
 
-	const input = uiState.commandInput?.elt;
 	if (!input || event.target === input) return;
 
 	if (event.key === 'Enter') {
@@ -197,8 +219,15 @@ function submitCommandInput(): void {
 }
 
 function appendCommandInputText(input: HTMLInputElement, value: string): void {
-	const insertAt = input.value.length;
-	input.setRangeText(value, insertAt, insertAt, 'end');
+	const selectionStart = input.selectionStart ?? input.value.length;
+	const selectionEnd = input.selectionEnd ?? selectionStart;
+	input.setRangeText(value, selectionStart, selectionEnd, 'end');
+}
+
+function getShiftCommandInputText(event: KeyboardEvent): string | null {
+	if (!event.shiftKey) return null;
+
+	return SHIFT_COMMAND_INPUT_MAP[event.code] ?? null;
 }
 
 function deleteCommandInputTrailingCharacter(input: HTMLInputElement): void {

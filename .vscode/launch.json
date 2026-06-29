@@ -5,8 +5,7 @@
 			"name": "Run in Safari",
 			"type": "node-terminal",
 			"request": "launch",
-			"command": "open -a Safari http://127.0.0.1:4173",
-			"preLaunchTask": "run:prepare-safari"
+			"command": "bash .vscode/run-safari.sh"
 		}
 	]
 }

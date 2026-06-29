@@ -9,16 +9,6 @@ export interface CommandResult {
 const VALID_DATABLOCK_SLOTS: readonly DatablockSlot[] = [
 	1, 2, 3, 4, 6, 7, 8, 9,
 ];
-const DATABLOCK_SLOT_ALIASES: Readonly<Record<string, DatablockSlot>> = {
-	Q: 1,
-	W: 2,
-	E: 3,
-	A: 4,
-	D: 6,
-	Z: 7,
-	X: 8,
-	C: 9,
-};
 
 export function executeCommand(rawCommand: string): CommandResult {
 	const command = rawCommand.trim();
@@ -26,10 +16,10 @@ export function executeCommand(rawCommand: string): CommandResult {
 		return { accept: false, message: 'NO COMMAND' };
 	}
 
-	const datablockMatch = command.match(/^([1-9QWEADZXC]) (\S+)$/i);
+	const datablockMatch = command.match(/^(\d) (\S+)$/);
 	if (datablockMatch) {
 		return executeDatablockSlotCommand(
-			parseDatablockSlot(datablockMatch[1]),
+			Number(datablockMatch[1]),
 			datablockMatch[2],
 		);
 	}
@@ -87,11 +77,6 @@ function findAircraftByAid(aid: string): Aircraft | undefined {
 
 function isDatablockSlot(value: number): value is DatablockSlot {
 	return VALID_DATABLOCK_SLOTS.includes(value as DatablockSlot);
-}
-
-function parseDatablockSlot(value: string): number {
-	const normalizedValue = value.toUpperCase();
-	return DATABLOCK_SLOT_ALIASES[normalizedValue] ?? Number(normalizedValue);
 }
 
 function unknownAid(aid: string): CommandResult {
