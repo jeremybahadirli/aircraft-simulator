@@ -31,19 +31,9 @@
 			}
 		},
 		{
-			"label": "debug:reload-chrome",
-			"type": "shell",
-			"command": "osascript",
-			"args": [
-				"${workspaceFolder}/.vscode/reload-chrome.applescript",
-				"http://127.0.0.1:4173"
-			],
-			"problemMatcher": []
-		},
-		{
-			"label": "debug:prepare-chrome",
+			"label": "run:prepare-safari",
 			"dependsOrder": "sequence",
-			"dependsOn": ["serve", "build", "debug:reload-chrome"]
+			"dependsOn": ["serve", "build"]
 		}
 	]
 }

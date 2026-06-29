@@ -18,12 +18,28 @@ const LEADER_LINE_PX = 52;
 const DATABLOCK_FONT = 'ERAMv300';
 const WIND_ARROW_LENGTH_PX = 12;
 const WIND_ARROW_HALF_WIDTH_PX = 4;
+const PAUSED_BORDER_STROKE_PX = 8;
+const PAUSED_BORDER_COLOR = '#808080';
 
 export function drawCanvas(viewport = createViewport()): void {
 	background('black');
 	stroke('gray');
 	strokeWeight(10);
 	drawViewPoint(viewport, ASVector.fromXY(0, 0));
+}
+
+export function drawPausedBorder(): void {
+	push();
+	stroke(PAUSED_BORDER_COLOR);
+	strokeWeight(PAUSED_BORDER_STROKE_PX);
+	strokeCap(SQUARE);
+	const rightPx = width;
+	const bottomPx = height;
+	line(0, 0, rightPx, 0);
+	line(rightPx, 0, rightPx, bottomPx);
+	line(rightPx, bottomPx, 0, bottomPx);
+	line(0, bottomPx, 0, 0);
+	pop();
 }
 
 export function drawCrosshair(viewport = createViewport()): void {

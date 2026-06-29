@@ -2,13 +2,11 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Debug in Chrome",
-			"type": "chrome",
+			"name": "Run in Safari",
+			"type": "node-terminal",
 			"request": "launch",
-			"url": "http://127.0.0.1:4173",
-			"webRoot": "${workspaceFolder}",
-			"preLaunchTask": "debug:prepare-chrome",
-			"userDataDir": "${env:TMPDIR}/aircraft-simulator-chrome-debug-profile"
+			"command": "open -a Safari http://127.0.0.1:4173",
+			"preLaunchTask": "run:prepare-safari"
 		}
 	]
 }

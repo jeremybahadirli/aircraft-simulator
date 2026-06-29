@@ -1,8 +1,8 @@
-import { simState } from './state.js';
 import type { Aircraft, DatablockSlot } from '../simulation/aircraft.js';
+import { simState } from './state.js';
 
 export interface CommandResult {
-	ok: boolean;
+	accept: boolean;
 	message: string;
 }
 
@@ -23,7 +23,7 @@ const DATABLOCK_SLOT_ALIASES: Readonly<Record<string, DatablockSlot>> = {
 export function executeCommand(rawCommand: string): CommandResult {
 	const command = rawCommand.trim();
 	if (command.length === 0) {
-		return { ok: false, message: 'NO COMMAND' };
+		return { accept: false, message: 'NO COMMAND' };
 	}
 
 	const datablockMatch = command.match(/^([1-9QWEADZXC]) (\S+)$/i);
@@ -34,18 +34,18 @@ export function executeCommand(rawCommand: string): CommandResult {
 		);
 	}
 
-	const haloMatch = command.match(/^QJ (?:(3) )?(\S+)$/i);
+	const haloMatch = command.match(/^QP J (?:(3) )?(\S+)$/i);
 	if (haloMatch) {
 		return executeHaloCommand(haloMatch[2], haloMatch[1] === '3' ? 3 : 5);
 	}
 
-	return { ok: false, message: 'INVALID COMMAND' };
+	return { accept: false, message: `${rawCommand}` };
 }
 
 function executeDatablockSlotCommand(slot: number, aid: string): CommandResult {
 	if (!isDatablockSlot(slot)) {
 		return {
-			ok: false,
+			accept: false,
 			message: `INVALID DATABLOCK SLOT ${slot}`,
 		};
 	}
@@ -55,8 +55,8 @@ function executeDatablockSlotCommand(slot: number, aid: string): CommandResult {
 
 	aircraft.display.datablockSlot = slot;
 	return {
-		ok: true,
-		message: `${aircraft.callsign} DATABLOCK SLOT ${slot}`,
+		accept: true,
+		message: `OFFSET DATA BLK\n${aircraft.callsign}/${aircraft.cid}`,
 	};
 }
 
@@ -66,17 +66,13 @@ function executeHaloCommand(aid: string, radiusNm: 3 | 5): CommandResult {
 
 	if (aircraft.display.halo && aircraft.display.haloRadiusNm === radiusNm) {
 		aircraft.display.halo = false;
-		return {
-			ok: true,
-			message: `${aircraft.callsign} HALO OFF`,
-		};
+	} else {
+		aircraft.display.halo = true;
+		aircraft.display.haloRadiusNm = radiusNm;
 	}
-
-	aircraft.display.halo = true;
-	aircraft.display.haloRadiusNm = radiusNm;
 	return {
-		ok: true,
-		message: `${aircraft.callsign} HALO ${radiusNm} NM`,
+		accept: true,
+		message: `REQ/DELETE DRI\n${aircraft.callsign}/${aircraft.cid}`,
 	};
 }
 
@@ -84,7 +80,8 @@ function findAircraftByAid(aid: string): Aircraft | undefined {
 	const normalizedAid = aid.trim().toUpperCase();
 	return simState.aircraftList.find(
 		(aircraft) =>
-			aircraft.cid === normalizedAid || aircraft.callsign === normalizedAid,
+			aircraft.cid === normalizedAid ||
+			aircraft.callsign === normalizedAid,
 	);
 }
 
@@ -99,7 +96,7 @@ function parseDatablockSlot(value: string): number {
 
 function unknownAid(aid: string): CommandResult {
 	return {
-		ok: false,
+		accept: false,
 		message: `UNKNOWN AID ${aid.toUpperCase()}`,
 	};
 }

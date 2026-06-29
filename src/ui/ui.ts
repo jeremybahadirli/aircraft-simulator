@@ -1,10 +1,10 @@
 import { executeCommand } from '../core/commands.js';
 import { simState, uiState } from '../core/state.js';
 
-const MAX_COMMAND_OUTPUT_LINES = 100;
 const CONSOLE_FONT_SIZE = '16px';
 const CONSOLE_HEIGHT_LH_PADDING = 3;
 const COMMAND_PANEL_FONT = 'ERAMv300, monospace, ui-monospace';
+const VECTOR_MINS_OPTIONS: readonly number[] = [0, 1, 2, 4, 8];
 
 export function createUI(): void {
 	uiState.canvasDiv = createDiv()
@@ -86,8 +86,8 @@ export function createUI(): void {
 	uiState.ringsCheckbox = createPersistentCheckbox('Show Rings', 'showRings');
 
 	uiState.vectorMinsInput = createSelect().parent(uiState.controlsDiv!);
-	for (let i of [0, 1, 2, 4, 8]) {
-		uiState.vectorMinsInput!.option(i);
+	for (const vectorMins of VECTOR_MINS_OPTIONS) {
+		uiState.vectorMinsInput!.option(vectorMins);
 	}
 	uiState.vectorMinsInput!.selected(1);
 
@@ -138,11 +138,19 @@ function handleCommandKeyDown(event: KeyboardEvent): void {
 }
 
 function handleGlobalCommandLineKeyDown(event: KeyboardEvent): void {
-	const input = uiState.commandInput?.elt;
-	if (!input || event.target === input || event.defaultPrevented) return;
+	if (event.defaultPrevented) return;
 	if (event.metaKey || event.ctrlKey || event.altKey || event.isComposing) {
 		return;
 	}
+
+	if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+		event.preventDefault();
+		stepVectorMins(event.key === 'ArrowUp' ? 1 : -1);
+		return;
+	}
+
+	const input = uiState.commandInput?.elt;
+	if (!input || event.target === input) return;
 
 	if (event.key === 'Enter') {
 		event.preventDefault();
@@ -165,14 +173,27 @@ function handleGlobalCommandLineKeyDown(event: KeyboardEvent): void {
 	appendCommandInputText(input, event.key);
 }
 
+function stepVectorMins(direction: 1 | -1): void {
+	const vectorMinsInput = uiState.vectorMinsInput;
+	if (!vectorMinsInput) return;
+
+	const currentValue = Number(vectorMinsInput.value());
+	const currentIndex = VECTOR_MINS_OPTIONS.indexOf(currentValue);
+	const baseIndex = currentIndex === -1 ? 0 : currentIndex;
+	const nextIndex = Math.max(
+		0,
+		Math.min(VECTOR_MINS_OPTIONS.length - 1, baseIndex + direction),
+	);
+	vectorMinsInput.selected(VECTOR_MINS_OPTIONS[nextIndex]);
+}
+
 function submitCommandInput(): void {
 	const command = uiState.commandInput?.value() ?? '';
 	if (command.trim().length === 0) return;
 
 	uiState.commandInput?.value('');
 	const result = executeCommand(command);
-	appendCommandOutput(`> ${command.toUpperCase()}`);
-	appendCommandOutput(`${result.ok ? 'OK' : 'ERR'} ${result.message}`);
+	setCommandOutput(result.accept, result.message);
 }
 
 function appendCommandInputText(input: HTMLInputElement, value: string): void {
@@ -187,18 +208,19 @@ function deleteCommandInputTrailingCharacter(input: HTMLInputElement): void {
 	input.setRangeText('', deleteAt, input.value.length, 'end');
 }
 
-function appendCommandOutput(line: string): void {
-	uiState.commandOutputLines.push(line);
-	if (uiState.commandOutputLines.length > MAX_COMMAND_OUTPUT_LINES) {
-		uiState.commandOutputLines.splice(
-			0,
-			uiState.commandOutputLines.length - MAX_COMMAND_OUTPUT_LINES,
-		);
-	}
+function setCommandOutput(accept: boolean, message: string): void {
 	if (!uiState.commandOutputDiv) return;
 
-	uiState.commandOutputDiv.elt.textContent =
-		uiState.commandOutputLines.join('\n');
+	const marker = document.createElement('span');
+	marker.textContent = accept ? '✓' : '✕';
+	marker.style.color = accept ? '#35d46b' : '#ff4d4d';
+
+	uiState.commandOutputDiv.elt.replaceChildren(
+		marker,
+		document.createTextNode(
+			` ${accept ? 'ACCEPT' : 'REJECT'}\n${message}`,
+		),
+	);
 	uiState.commandOutputDiv.elt.scrollTop =
 		uiState.commandOutputDiv.elt.scrollHeight;
 }

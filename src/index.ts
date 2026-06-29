@@ -8,6 +8,7 @@ import {
 	drawCanvas,
 	drawCrosshair,
 	drawGrid,
+	drawPausedBorder,
 	drawRings,
 	drawWind,
 } from './render/drawing.js';
@@ -103,6 +104,7 @@ function draw(): void {
 	for (let i = simState.aircraftList.length - 1; i >= 0; i--) {
 		drawAircraft(simState.aircraftList[i], i, viewport);
 	}
+	if (simState.settings.playbackSpeed === 0) drawPausedBorder();
 
 	simState.time = nextTime;
 }
