@@ -34,6 +34,7 @@ jobs:
           mkdir site
           cp index.html site/index.html
           cp style.css site/style.css
+          cp ERAMv300.ttf site/ERAMv300.ttf
           cp -r dist site/dist
 
       - uses: actions/upload-pages-artifact@v5
