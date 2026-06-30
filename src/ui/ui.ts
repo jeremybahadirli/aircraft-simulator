@@ -172,6 +172,12 @@ function handleGlobalCommandLineKeyDown(event: KeyboardEvent): void {
 		return;
 	}
 
+	if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+		event.preventDefault();
+		stepVRange(event.key === 'ArrowLeft' ? 25 : -25);
+		return;
+	}
+
 	if (!input || event.target === input) return;
 
 	if (event.key === 'Enter') {
@@ -207,6 +213,13 @@ function stepVectorMins(direction: 1 | -1): void {
 		Math.min(VECTOR_MINS_OPTIONS.length - 1, baseIndex + direction),
 	);
 	vectorMinsInput.selected(VECTOR_MINS_OPTIONS[nextIndex]);
+}
+
+function stepVRange(nm: number): void {
+	simState.settings.vRange = Math.max(
+		25,
+		Math.min(400, simState.settings.vRange + nm),
+	);
 }
 
 function submitCommandInput(): void {
@@ -246,9 +259,7 @@ function setCommandOutput(accept: boolean, message: string): void {
 
 	uiState.commandOutputDiv.elt.replaceChildren(
 		marker,
-		document.createTextNode(
-			` ${accept ? 'ACCEPT' : 'REJECT'}\n${message}`,
-		),
+		document.createTextNode(` ${accept ? 'ACCEPT' : 'REJECT'}\n${message}`),
 	);
 	uiState.commandOutputDiv.elt.scrollTop =
 		uiState.commandOutputDiv.elt.scrollHeight;
