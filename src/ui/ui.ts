@@ -114,7 +114,7 @@ export function createUI(): void {
 
 	uiState.rngBrgLabel = createInput()
 		.parent(uiState.controlsDiv!)
-		.size(80)
+		.size(100)
 		.attribute('disabled', 'true')
 		.style('color', 'black');
 
