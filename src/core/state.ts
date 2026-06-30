@@ -34,6 +34,7 @@ export interface SimulationState {
 	nextUpdate: number;
 	nextLogTime: number;
 	settings: SimulationSettings;
+	defaultPlaybackSpeed: number;
 	atmosphere: Atmosphere;
 	aircraftList: Aircraft[];
 	stats: Stat[];
@@ -73,6 +74,7 @@ export const simState: SimulationState = {
 	nextUpdate: 0,
 	nextLogTime: 0,
 	settings: {} as SimulationSettings,
+	defaultPlaybackSpeed: 0,
 	atmosphere: {} as Atmosphere,
 	aircraftList: [],
 	stats: [],
@@ -113,6 +115,7 @@ export function preConfig(): void {
 }
 
 export function postConfig(): void {
+	simState.defaultPlaybackSpeed = simState.settings.playbackSpeed;
 	simState.time = simState.settings.startTimeMins / 60;
 	simState.lastUpdate = simState.time;
 	simState.nextUpdate = simState.time;

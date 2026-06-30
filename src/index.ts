@@ -33,7 +33,6 @@ function setup(): void {
 	uiState.canvas = createCanvas().parent(uiState.canvasDiv!);
 	handleWindowResized();
 
-	const defaultPlaybackSpeed = simState.settings.playbackSpeed;
 	uiState.canvas!.mouseClicked(() => {
 		if (simState.rngBrgMode) {
 			if (simState.rngBrgPos === null) {
@@ -54,7 +53,7 @@ function setup(): void {
 		} else {
 			simState.settings.playbackSpeed =
 				simState.settings.playbackSpeed === 0
-					? defaultPlaybackSpeed
+					? simState.defaultPlaybackSpeed
 					: 0;
 		}
 	});

@@ -123,6 +123,7 @@ export function createUI(): void {
 		.style('display', uiState.displayPracticeAnswerButton ? '' : 'none')
 		.mouseClicked(() => {
 			simState.settings.playbackSpeed = 20;
+			simState.defaultPlaybackSpeed = simState.settings.playbackSpeed;
 			simState.settings.updateFrequency = 0;
 			simState.nextUpdate = simState.time;
 		});
