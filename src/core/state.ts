@@ -110,7 +110,7 @@ export const uiState: UIState = {
 
 export function preConfig(): void {
 	simState.nextLogTime = 0;
-	simState.logLines = ['\n'];
+	simState.logLines = ['  '];
 	simState.logDirty = false;
 }
 

@@ -56,6 +56,7 @@ export function createUI(): void {
 		.parent(uiState.consoleDiv)
 		.style('flex', '1 1 50%')
 		.style('min-width', '0')
+		.style('max-width', '600px')
 		.style('height', '100%')
 		.style('box-sizing', 'border-box')
 		.style('display', 'flex')
