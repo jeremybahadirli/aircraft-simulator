@@ -5,6 +5,7 @@ import {
 } from '../simulation/aircraft.js';
 import { Atmosphere } from '../simulation/atmosphere.js';
 import { separationPractice } from '../simulation/positioning.js';
+import { Proximity } from '../simulation/proximity.js';
 import { postConfig, preConfig, simState } from './state.js';
 
 export function initConfig(): void {
@@ -12,9 +13,9 @@ export function initConfig(): void {
 	resetAircraftIdentityRegistry();
 
 	simState.settings = {
-		playbackSpeed: 1,
-		updateFrequency: 12,
-		startTimeMins: 0,
+		playbackSpeed: 2,
+		updateFrequency: 0,
+		startTimeMins: -0.5,
 		vRange: 100,
 		statsDecimalPlaces: 0,
 		proximityDecimalPlaces: 1,
@@ -24,32 +25,33 @@ export function initConfig(): void {
 
 	simState.aircraftList = [
 		Aircraft.onTrack({
-			pos: ASVector.fromXY(-20, 15),
-			track: 180,
+			pos: ASVector.fromXY(0, -6),
+			track: 360,
 			alt: 200,
-			speed: { unit: 'tas', value: 400 },
+			speed: { unit: 'tas', value: 300 },
 			display: {
-				halo: true,
-				datablockSlot: 1,
+				halo: false,
+				datablockSlot: 4,
 			},
 		}),
 		Aircraft.onTrack({
 			pos: ASVector.fromXY(0, 0),
-			track: 290,
+			track: 90,
 			alt: 200,
-			speed: { unit: 'tas', value: 400 },
+			speed: { unit: 'tas', value: 300 },
 			display: {
-				datablockSlot: 1,
+				halo: true,
+				datablockSlot: 2,
 			},
 		}),
 	];
 
 	// simState.stats = [Stat.create(0), Stat.create(1)];
 
-	// simState.proximities = [
-	// 	Proximity.acToAc({ ac1: 0, ac2: 1 }),
-	// 	Proximity.acToFRD({ ac1: 1, r: 0, d: 10 }),
-	// ];
+	simState.proximities = [
+		Proximity.acToAc({ ac1: 0, ac2: 1 }),
+		// Proximity.acToFRD({ ac1: 1, r: 0, d: 10 }),
+	];
 
 	simState.events = [
 		// 	{
@@ -71,7 +73,7 @@ export function initConfig(): void {
 	];
 
 	// Ignores config.js, uses separationPracticeConfig.js
-	separationPractice();
+	// separationPractice();
 
 	// Normally, ac0 starts at (0,0) with a hdg
 	// ac1 placed at (0,0) to be autopositioned with hdg=0
