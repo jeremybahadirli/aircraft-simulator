@@ -4,7 +4,6 @@ import {
 	resetAircraftIdentityRegistry,
 } from '../simulation/aircraft.js';
 import { Atmosphere } from '../simulation/atmosphere.js';
-import { separationPractice } from '../simulation/positioning.js';
 import { Proximity } from '../simulation/proximity.js';
 import { postConfig, preConfig, simState } from './state.js';
 
@@ -28,7 +27,7 @@ export function initConfig(): void {
 			pos: ASVector.fromXY(0, -6),
 			track: 360,
 			alt: 200,
-			speed: { unit: 'tas', value: 300 },
+			speed: { unit: 'tas', value: 240 },
 			display: {
 				halo: false,
 				datablockSlot: 4,
@@ -38,7 +37,7 @@ export function initConfig(): void {
 			pos: ASVector.fromXY(0, 0),
 			track: 90,
 			alt: 200,
-			speed: { unit: 'tas', value: 300 },
+			speed: { unit: 'tas', value: 240 },
 			display: {
 				halo: true,
 				datablockSlot: 2,
