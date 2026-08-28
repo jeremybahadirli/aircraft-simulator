@@ -12,10 +12,10 @@ export function initConfig(): void {
 	resetAircraftIdentityRegistry();
 
 	simState.settings = {
-		playbackSpeed: 2,
-		updateFrequency: 0,
-		startTimeMins: -0.5,
-		vRange: 100,
+		playbackSpeed: 1,
+		updateFrequency: 12,
+		startTimeMins: 0,
+		vRange: 150,
 		statsDecimalPlaces: 0,
 		proximityDecimalPlaces: 1,
 	};
@@ -72,7 +72,7 @@ export function initConfig(): void {
 	];
 
 	// Ignores config.js, uses separationPracticeConfig.js
-	// separationPractice();
+	separationPractice();
 
 	// Normally, ac0 starts at (0,0) with a hdg
 	// ac1 placed at (0,0) to be autopositioned with hdg=0
