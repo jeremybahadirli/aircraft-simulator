@@ -6,6 +6,7 @@ import {
 import { Atmosphere } from '../simulation/atmosphere.js';
 import { Proximity } from '../simulation/proximity.js';
 import { postConfig, preConfig, simState } from './state.js';
+import { separationPractice } from '../simulation/positioning.js';
 
 export function initConfig(): void {
 	preConfig();
