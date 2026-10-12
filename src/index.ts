@@ -64,6 +64,8 @@ function setup(): void {
 	});
 	simState.proximities.forEach((l) => l.updateProximity(0));
 
+	simState.nextUpdate += simState.settings.secondsPerUpdate / 60 / 60;
+
 	printLogs(simState.time);
 }
 
@@ -89,7 +91,7 @@ function draw(): void {
 		);
 
 		simState.lastUpdate = nextTime;
-		simState.nextUpdate += simState.settings.updateFrequency / 60 / 60;
+		simState.nextUpdate += simState.settings.secondsPerUpdate / 60 / 60;
 	}
 	if (simState.settings.playbackSpeed !== 0) printLogs(nextTime);
 
