@@ -1,3 +1,7 @@
+declare module 'https://cdn.jsdelivr.net/npm/ajv@8.20.0/+esm' {
+	export { Ajv } from 'ajv';
+}
+
 type StyleValue = string | number | boolean | null | undefined;
 
 declare namespace p5 {

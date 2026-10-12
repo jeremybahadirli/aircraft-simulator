@@ -7,5 +7,15 @@
 	},
 	"search.exclude": {
 		"**/.vscode/chrome-debug-profile/**": true
-	}
+	},
+	"json.schemas": [
+		{
+			"fileMatch": ["/src/config.json"],
+			"url": "./src/config.schema.json"
+		},
+		{
+			"fileMatch": ["/src/separation-practice-config.json"],
+			"url": "./src/separation-practice-config.schema.json"
+		}
+	]
 }

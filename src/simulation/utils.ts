@@ -6,6 +6,37 @@ import { ASVector } from '../math/asvector.js';
 import type { Aircraft } from './aircraft.js';
 import type { Atmosphere } from './atmosphere.js';
 
+interface AircraftReference {
+	flid?: string;
+	index?: number;
+}
+
+export function resolveAircraftReference(
+	aircraftList: readonly Aircraft[],
+	{ flid, index }: AircraftReference,
+): Aircraft {
+	if (flid !== undefined) {
+		const normalizedFlid = flid.trim().toUpperCase();
+		const aircraft = aircraftList.find(
+			(aircraft) =>
+				aircraft.cid === normalizedFlid ||
+				aircraft.callsign === normalizedFlid,
+		);
+		if (aircraft === undefined) {
+			throw new Error(`Unknown aircraft "${flid}".`);
+		}
+		return aircraft;
+	}
+	if (index !== undefined) {
+		const aircraft = aircraftList[index];
+		if (aircraft === undefined) {
+			throw new Error(`Invalid aircraft index "${index}".`);
+		}
+		return aircraft;
+	}
+	throw new Error(`Aircraft lookup missing FLID or index.`);
+}
+
 export function createVelocityOnTrack(
 	track: number,
 	TAS: number,

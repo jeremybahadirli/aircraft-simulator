@@ -13,17 +13,17 @@ export function printLogs(hours: number): void {
 
 	for (const stat of simState.stats) {
 		const hdgStr = formatNumber(
-			stat.aircraft.vel.asHeading(),
+			stat.ac.vel.asHeading(),
 			simState.settings.statsDecimalPlaces,
 			3
 		);
 		const trkStr = formatNumber(
-			stat.aircraft.trk.asHeading(),
+			stat.ac.trk.asHeading(),
 			simState.settings.statsDecimalPlaces,
 			3
 		);
 		const gsStr = formatNumber(
-			stat.aircraft.trk.mag(),
+			stat.ac.trk.mag(),
 			simState.settings.statsDecimalPlaces
 		);
 		frameLines.push(

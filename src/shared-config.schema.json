@@ -1,0 +1,145 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "shared-config.schema.json",
+	"title": "Aircraft Simulator Shared Config Definitions",
+	"definitions": {
+		"stats": {
+			"type": "array",
+			"description": "Configures aircraft stat readouts.\n\nEach entry needs an aircraft, which can be defined by \"flid\" or \"index\". FLID is the CID or callsign, and index is the position of the aircraft in the aircraftList, with the first aircraft being 0.\n\n\"label\" is optional. If no label is provided, the callsign will be used.",
+			"items": { "$ref": "#/definitions/stat" }
+		},
+		"proximities": {
+			"type": "array",
+			"description": "Configures proximity readouts.\n\nEach entry needs at least one aircraft, which can be defined by \"flid1\" or \"index1\". FLID is the CID or callsign, and index is the position of the aircraft in the aircraftList, with the first aircraft being 0.\n\nThe second point may be either \"flid2\" or \"index2\", or an xyPosition or frdPosition relative to the origin.",
+			"items": { "$ref": "#/definitions/proximity" }
+		},
+		"stat": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"flid": { "$ref": "#/definitions/flid" },
+				"index": {
+					"type": "integer",
+					"minimum": 0,
+					"description": "Zero-based index of the aircraft in aircraftList."
+				},
+				"label": { "$ref": "#/definitions/label" }
+			},
+			"oneOf": [{ "required": ["flid"] }, { "required": ["index"] }]
+		},
+		"proximity": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"flid1": { "$ref": "#/definitions/flid" },
+				"index1": {
+					"type": "integer",
+					"minimum": 0,
+					"description": "Zero-based index of the first aircraft in aircraftList."
+				},
+				"flid2": { "$ref": "#/definitions/flid" },
+				"index2": {
+					"type": "integer",
+					"minimum": 0,
+					"description": "Zero-based index of the target aircraft in aircraftList."
+				},
+				"xyPosition": { "$ref": "#/definitions/xyPosition" },
+				"frdPosition": { "$ref": "#/definitions/frdPosition" },
+				"label": { "$ref": "#/definitions/label" }
+			},
+			"oneOf": [{ "required": ["flid1"] }, { "required": ["index1"] }],
+			"allOf": [
+				{
+					"oneOf": [
+						{ "required": ["flid2"] },
+						{ "required": ["index2"] },
+						{ "required": ["xyPosition"] },
+						{ "required": ["frdPosition"] }
+					]
+				}
+			]
+		},
+		"xyPosition": {
+			"description": "xy position relative to the origin.\n+x is right\n+y is up",
+			"allOf": [{ "$ref": "#/definitions/xyPositionShape" }]
+		},
+		"frdPosition": {
+			"description": "Position expressed as a radial and distance from the origin.\nr: radial in degrees\nd: distance in NM",
+			"allOf": [{ "$ref": "#/definitions/frdPositionShape" }]
+		},
+		"xyPositionShape": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["x", "y"],
+			"properties": {
+				"x": { "type": "number" },
+				"y": { "type": "number" }
+			}
+		},
+		"frdPositionShape": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["r", "d"],
+			"properties": {
+				"r": {
+					"type": "number",
+					"exclusiveMinimum": 0,
+					"maximum": 360
+				},
+				"d": { "type": "number" }
+			}
+		},
+		"cid": {
+			"type": "string",
+			"description": "3 chars beginning with a number.",
+			"pattern": "^\\d[A-Z0-9]{2}$"
+		},
+		"callsign": {
+			"type": "string",
+			"description": "2-7 chars beginning with a letter",
+			"pattern": "^[A-Z][A-Z0-9]{1,6}$"
+		},
+		"flid": {
+			"type": "string",
+			"description": "FLID must be a valid CID or callsign.\n\n\tCID: 3 chars beginning with a number\n\tCallsign: 2-7 chars beginning with a letter",
+			"pattern": "(^\\d[A-Z0-9]{2}$)|(^[A-Z][A-Z0-9]{1,6}$)"
+		},
+		"label": {
+			"type": "string",
+			"description": "A label to use for a console entry. 0-16 characters.",
+			"maxLength": 16
+		},
+		"playbackSpeed": {
+			"description": "Playback speed in multiples of real time.\n\t0: paused\n\t1: real time\n\t2: double speed\n\tetc.",
+			"type": "number",
+			"default": 1
+		},
+		"secondsPerUpdate": {
+			"description": "Frequency at which data blocks update.\n\t0: continuous\n\t1: every second\n\t12: every 12 seconds\n\tetc.",
+			"type": "number",
+			"minimum": 0,
+			"default": 0
+		},
+		"vRange": {
+			"description": "Scope range from top of screen to bottom of screen in NM.",
+			"type": "number",
+			"minimum": 25,
+			"maximum": 400,
+			"default": 150
+		},
+		"statsDecimalPlaces": {
+			"description": "Decimal places for stat readouts in the console. Rounding is to the nearest decimal place.",
+			"type": "integer",
+			"minimum": 0,
+			"maximum": 12,
+			"default": 0
+		},
+		"proximityDecimalPlaces": {
+			"description": "Decimal places for proximity readouts in the console. Rounding is to the nearest decimal place.",
+			"type": "integer",
+			"minimum": 0,
+			"maximum": 12,
+			"default": 0
+		}
+	}
+}

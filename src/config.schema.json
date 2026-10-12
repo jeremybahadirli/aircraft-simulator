@@ -1,0 +1,212 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "config.schema.json",
+	"title": "Aircraft Simulator Config",
+	"type": "object",
+	"additionalProperties": false,
+	"required": [
+		"settings",
+		"atmosphere",
+		"aircraftList",
+		"stats",
+		"proximities"
+	],
+	"properties": {
+		"settings": { "$ref": "#/definitions/settings" },
+		"atmosphere": { "$ref": "#/definitions/atmosphere" },
+		"aircraftList": {
+			"type": "array",
+			"description": "Configures the list of aircraft. Each aircraft has a CID, callsign, position, direction, altitude, speed, and display options. CID and callsign may omitted and they'll be randomly generated. There are multiple ways to define position, direction, and speed:\n\n\tPosition: xyPosition or frdPosition\n\tDirection: heading or track or directFix. directFix is a coordinate, either an xyPosition or frdPosition\n\tSpeed: tas or ias or mach",
+			"items": { "$ref": "#/definitions/aircraft" }
+		},
+		"stats": { "$ref": "./shared-config.schema.json#/definitions/stats" },
+		"proximities": {
+			"$ref": "./shared-config.schema.json#/definitions/proximities"
+		}
+	},
+	"definitions": {
+		"settings": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"playbackSpeed",
+				"secondsPerUpdate",
+				"startTimeMins",
+				"vRange",
+				"statsDecimalPlaces",
+				"proximityDecimalPlaces",
+				"mode"
+			],
+			"properties": {
+				"playbackSpeed": {
+					"$ref": "./shared-config.schema.json#/definitions/playbackSpeed"
+				},
+				"secondsPerUpdate": {
+					"$ref": "./shared-config.schema.json#/definitions/secondsPerUpdate"
+				},
+				"startTimeMins": {
+					"description": "Time at the beginning of the simulation in minutes.",
+					"type": "number",
+					"default": 0
+				},
+				"vRange": {
+					"$ref": "./shared-config.schema.json#/definitions/vRange"
+				},
+				"statsDecimalPlaces": {
+					"$ref": "./shared-config.schema.json#/definitions/statsDecimalPlaces"
+				},
+				"proximityDecimalPlaces": {
+					"$ref": "./shared-config.schema.json#/definitions/proximityDecimalPlaces"
+				},
+				"mode": {
+					"description": "Simulator mode.\n\t\"normal\": Uses the aircraft list and other settings defined in config.json (this file).\n\t\"separation_practice\": Separation Practice mode. Uses random aircraft and settings defined in separation-practice-config.json.\n\t\"auto_position\": Automatically positions Aircraft 1 south of Aircraft 0 such that they will pass at 5 NM separation. Normally, Aircraft 0 should be placed at (0, 0) on a heading, and Aircraft 1 should be placed at (0, 0) on a 360 track.\"",
+					"type": "string",
+					"enum": ["normal", "separation_practice", "auto_position"],
+					"default": "normal"
+				}
+			}
+		},
+		"atmosphere": {
+			"type": "object",
+			"description": "Configures the atmosphere. Sea level temperature and pressure affect how ias and mach change with altitude.",
+			"additionalProperties": false,
+			"required": ["wind", "seaLevelTemp", "seaLevelPressure"],
+			"properties": {
+				"wind": { "$ref": "#/definitions/wind" },
+				"seaLevelTemp": {
+					"type": "number",
+					"description": "Sea level temperature in ºC. Standard atmosphere is 15.",
+					"minimum": -100,
+					"maximum": 60,
+					"default": 15
+				},
+				"seaLevelPressure": {
+					"type": "number",
+					"description": "Sea level pressure in inHg. Standard atmosphere is 29.92.",
+					"minimum": 27,
+					"maximum": 33,
+					"default": 29.92
+				}
+			}
+		},
+		"wind": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["from", "speed"],
+			"properties": {
+				"from": {
+					"$ref": "#/definitions/direction",
+					"description": "Direction from which wind is coming in degrees."
+				},
+				"speed": {
+					"type": "number",
+					"description": "Speed of wind in knots.",
+					"default": 0
+				}
+			}
+		},
+		"aircraft": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["alt", "display"],
+			"properties": {
+				"cid": {
+					"$ref": "./shared-config.schema.json#/definitions/cid"
+				},
+				"callsign": {
+					"$ref": "./shared-config.schema.json#/definitions/callsign"
+				},
+				"xyPosition": {
+					"$ref": "./shared-config.schema.json#/definitions/xyPosition"
+				},
+				"frdPosition": {
+					"$ref": "./shared-config.schema.json#/definitions/frdPosition"
+				},
+				"heading": {
+					"$ref": "#/definitions/direction"
+				},
+				"track": {
+					"$ref": "#/definitions/direction"
+				},
+				"directFix": {
+					"description": "Fix the aircraft will fly directly toward. Either x/y coordinates or radial/distance coordinates from the origin.",
+					"oneOf": [
+						{
+							"$ref": "./shared-config.schema.json#/definitions/xyPositionShape"
+						},
+						{
+							"$ref": "./shared-config.schema.json#/definitions/frdPositionShape"
+						}
+					]
+				},
+				"alt": {
+					"type": "number",
+					"description": "Altitude in hundreds of feet MSL."
+				},
+				"tas": {
+					"type": "number",
+					"minimum": 0
+				},
+				"ias": {
+					"type": "number",
+					"minimum": 0
+				},
+				"mach": {
+					"type": "number",
+					"minimum": 0,
+					"exclusiveMaximum": 1
+				},
+				"display": { "$ref": "#/definitions/aircraftDisplay" }
+			},
+			"allOf": [
+				{
+					"oneOf": [
+						{ "required": ["xyPosition"] },
+						{ "required": ["frdPosition"] }
+					]
+				},
+				{
+					"oneOf": [
+						{ "required": ["heading"] },
+						{ "required": ["track"] },
+						{ "required": ["directFix"] }
+					]
+				},
+				{
+					"oneOf": [
+						{ "required": ["tas"] },
+						{ "required": ["ias"] },
+						{ "required": ["mach"] }
+					]
+				}
+			]
+		},
+		"aircraftDisplay": {
+			"type": "object",
+			"description": "Data block display options. All of these are optional.\n\tcolor: JavaScript color string\n\thalo: true/false\n\thaloRadiusNm: radius of halo in NM\n\tshowDatablock: true/false\n\tdatablockSlot: numpad direction of data block",
+			"additionalProperties": false,
+			"properties": {
+				"color": {
+					"type": "string",
+					"description": "Must be a valid JavaScript color string. Ex:\n\n\tred\n\t#00ff00\n\trgb(0,0,255)"
+				},
+				"halo": { "type": "boolean" },
+				"haloRadiusNm": {
+					"type": "number",
+					"exclusiveMinimum": 0
+				},
+				"showDatablock": { "type": "boolean" },
+				"datablockSlot": {
+					"type": "integer",
+					"enum": [1, 2, 3, 4, 6, 7, 8, 9]
+				}
+			}
+		},
+		"direction": {
+			"type": "number",
+			"exclusiveMinimum": 0,
+			"maximum": 360,
+			"default": 360
+		}
+	}
+}

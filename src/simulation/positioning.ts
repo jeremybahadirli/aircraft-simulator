@@ -1,32 +1,34 @@
-import { separationPracticeConfig } from '../core/separationPracticeConfig.js';
+import {
+	createSeparationPracticeProximities,
+	createSeparationPracticeStats,
+	initSeparationPracticeConfig,
+} from '../core/separationPracticeConfig.js';
 import { simState, uiState } from '../core/state.js';
 import { ASVector } from '../math/asvector.js';
 import { Aircraft, resetAircraftIdentityRegistry } from './aircraft.js';
+import { Atmosphere } from './atmosphere.js';
 import { randBetween } from './utils.js';
 
-export function autoPosition(i: number, j: number): void {
-	const ac1 = simState.aircraftList[i];
-	const ac2 = simState.aircraftList[j];
-
+export function autoPosition(ac1: Aircraft, ac2: Aircraft): void {
 	ac2.pos = ASVector.fromXY(ac1.pos.x, ac1.pos.y - getOffset(ac1, ac2));
 }
 
 export function separationPractice(): void {
-	separationPracticeConfig();
-	const settings = simState.separationPracticeSettings;
+	const config = initSeparationPracticeConfig();
 
-	if (!settings) return;
+	if (!simState.separationPracticeSettings) return;
 
 	resetAircraftIdentityRegistry();
 
 	const leadTrack = randBetween(0, 360);
 
-	simState.settings.startTimeMins = settings.startTime;
-
 	const ac1 = Aircraft.onHeading({
 		pos: ASVector.fromXY(0, 0),
-		heading: settings.angle,
-		speed: { unit: 'tas', value: settings.leadSpeed },
+		heading: simState.separationPracticeSettings.angle,
+		speed: {
+			unit: 'tas',
+			value: simState.separationPracticeSettings.leadSpeed,
+		},
 		display: {
 			halo: true,
 		},
@@ -36,19 +38,35 @@ export function separationPractice(): void {
 		heading: 360,
 		speed: {
 			unit: 'tas',
-			value: settings.leadSpeed - settings.speedDifference,
+			value:
+				simState.separationPracticeSettings.leadSpeed -
+				simState.separationPracticeSettings.speedDifference,
 		},
 	});
 
-	const offset = getOffset(ac1, ac2, settings.separation);
+	const offset = getOffset(
+		ac1,
+		ac2,
+		simState.separationPracticeSettings.separation,
+	);
 
 	ac1.flyTrack(leadTrack);
-	ac2.pos = ASVector.fromAngle(leadTrack + settings.angle, -offset);
-	ac2.flyTrack(leadTrack + settings.angle);
+	ac2.pos = ASVector.fromAngle(
+		leadTrack + simState.separationPracticeSettings.angle,
+		-offset,
+	);
+	ac2.flyTrack(leadTrack + simState.separationPracticeSettings.angle);
 
+	simState.atmosphere = new Atmosphere({ wind: { from: 0, speed: 0 } });
 	simState.aircraftList = [ac1, ac2];
-	simState.stats = simState.separationPracticeStats;
-	simState.proximities = simState.separationPracticeProximities;
+	simState.stats = createSeparationPracticeStats(
+		config.stats,
+		simState.aircraftList,
+	);
+	simState.proximities = createSeparationPracticeProximities(
+		config.proximities,
+		simState.aircraftList,
+	);
 	simState.events = [];
 
 	uiState.displayPracticeAnswerButton = true;

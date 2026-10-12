@@ -125,7 +125,7 @@ export function createUI(): void {
 		.mouseClicked(() => {
 			simState.settings.playbackSpeed = 20;
 			simState.defaultPlaybackSpeed = simState.settings.playbackSpeed;
-			simState.settings.updateFrequency = 0;
+			simState.settings.secondsPerUpdate = 0;
 			simState.nextUpdate = simState.time;
 		});
 }

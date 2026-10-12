@@ -14,3 +14,7 @@ export const T0 = 15;
 export const KNOTS_PER_MPS = 1.9438444924406;
 export const MPS_PER_KNOT = 1 / KNOTS_PER_MPS;
 export const FT_TO_M = 0.3048;
+
+export const CID_REGEX = /^\d[A-Z0-9]{2}$/;
+export const CALLSIGN_REGEX = /^[A-Z][A-Z0-9]{1,6}$/;
+export const FLID_REGEX = /(^[A-Z][A-Z0-9]{1,6}$)|(^\d[A-Z0-9]{2}$)/;

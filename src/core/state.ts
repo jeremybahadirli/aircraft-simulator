@@ -1,20 +1,25 @@
 import type { ASVector } from '../math/asvector.js';
 import type { Aircraft } from '../simulation/aircraft.js';
+import { resetAircraftIdentityRegistry } from '../simulation/aircraft.js';
 import type { Atmosphere } from '../simulation/atmosphere.js';
+import { autoPosition, separationPractice } from '../simulation/positioning.js';
 import type { Proximity } from '../simulation/proximity.js';
 import type { Stat } from '../simulation/stat.js';
 
+export type mode = 'normal' | 'separation_practice' | 'auto_position';
+
 export interface SimulationSettings {
 	playbackSpeed: number;
-	updateFrequency: number;
+	secondsPerUpdate: number;
 	startTimeMins: number;
 	vRange: number;
 	statsDecimalPlaces: number;
 	proximityDecimalPlaces: number;
+	mode: mode;
 }
 
 export interface SeparationPracticeSettings {
-	startTime: number;
+	startTimeMins: number;
 	separation: number;
 	leadSpeed: number;
 	angle: number;
@@ -45,8 +50,6 @@ export interface SimulationState {
 	rngBrgMode: boolean;
 	rngBrgPos: ASVector | null;
 	separationPracticeSettings: SeparationPracticeSettings | null;
-	separationPracticeStats: Stat[];
-	separationPracticeProximities: Proximity[];
 }
 
 export interface UIState {
@@ -73,8 +76,8 @@ export const simState: SimulationState = {
 	lastUpdate: 0,
 	nextUpdate: 0,
 	nextLogTime: 0,
-	settings: {} as SimulationSettings,
 	defaultPlaybackSpeed: 0,
+	settings: {} as SimulationSettings,
 	atmosphere: {} as Atmosphere,
 	aircraftList: [],
 	stats: [],
@@ -85,8 +88,6 @@ export const simState: SimulationState = {
 	rngBrgMode: false,
 	rngBrgPos: null,
 	separationPracticeSettings: null,
-	separationPracticeStats: [],
-	separationPracticeProximities: [],
 };
 
 export const uiState: UIState = {
@@ -109,12 +110,23 @@ export const uiState: UIState = {
 };
 
 export function preConfig(): void {
+	resetAircraftIdentityRegistry();
+
 	simState.nextLogTime = 0;
 	simState.logLines = ['  '];
 	simState.logDirty = false;
 }
 
 export function postConfig(): void {
+	switch (simState.settings.mode) {
+		case 'separation_practice':
+			separationPractice();
+			break;
+		case 'auto_position':
+			autoPosition(simState.aircraftList[0], simState.aircraftList[1]);
+			break;
+	}
+
 	simState.defaultPlaybackSpeed = simState.settings.playbackSpeed;
 	simState.time = simState.settings.startTimeMins / 60;
 	simState.lastUpdate = simState.time;

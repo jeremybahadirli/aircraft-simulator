@@ -1,4 +1,5 @@
-import type { Aircraft, DatablockSlot } from '../simulation/aircraft.js';
+import type { DatablockSlot } from '../simulation/aircraft.js';
+import { resolveAircraftReference } from '../simulation/utils.js';
 import { simState } from './state.js';
 
 export interface CommandResult {
@@ -32,7 +33,10 @@ export function executeCommand(rawCommand: string): CommandResult {
 	return { accept: false, message: `${rawCommand}` };
 }
 
-function executeDatablockSlotCommand(slot: number, flid: string): CommandResult {
+function executeDatablockSlotCommand(
+	slot: number,
+	flid: string,
+): CommandResult {
 	if (!isDatablockSlot(slot)) {
 		return {
 			accept: false,
@@ -40,7 +44,9 @@ function executeDatablockSlotCommand(slot: number, flid: string): CommandResult 
 		};
 	}
 
-	const aircraft = findAircraftByFlid(flid);
+	const aircraft = resolveAircraftReference(simState.aircraftList, {
+		flid: flid,
+	});
 	if (!aircraft) return unknownFlid(flid);
 
 	aircraft.display.datablockSlot = slot;
@@ -51,7 +57,9 @@ function executeDatablockSlotCommand(slot: number, flid: string): CommandResult 
 }
 
 function executeHaloCommand(flid: string, radiusNm: 3 | 5): CommandResult {
-	const aircraft = findAircraftByFlid(flid);
+	const aircraft = resolveAircraftReference(simState.aircraftList, {
+		flid: flid,
+	});
 	if (!aircraft) return unknownFlid(flid);
 
 	if (aircraft.display.halo && aircraft.display.haloRadiusNm === radiusNm) {
@@ -64,15 +72,6 @@ function executeHaloCommand(flid: string, radiusNm: 3 | 5): CommandResult {
 		accept: true,
 		message: `REQ/DELETE DRI\n${aircraft.callsign}/${aircraft.cid}`,
 	};
-}
-
-function findAircraftByFlid(flid: string): Aircraft | undefined {
-	const normalizedFlid = flid.trim().toUpperCase();
-	return simState.aircraftList.find(
-		(aircraft) =>
-			aircraft.cid === normalizedFlid ||
-			aircraft.callsign === normalizedFlid,
-	);
 }
 
 function isDatablockSlot(value: number): value is DatablockSlot {

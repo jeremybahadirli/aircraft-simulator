@@ -1,3 +1,4 @@
+import { CALLSIGN_REGEX, CID_REGEX } from '../core/constants.js';
 import { simState } from '../core/state.js';
 import { ASVector } from '../math/asvector.js';
 import { SpeedConversions } from '../math/speedConversions.js';
@@ -76,11 +77,12 @@ export class Aircraft {
 		alt = 240,
 		display,
 	}: AircraftOptions) {
-		const normalizedCid = cid === undefined ? generateCid() : normalizeCid(cid);
+		const normalizedCid =
+			cid === undefined ? generateCid() : normalizeCid(cid);
 		const normalizedCallsign =
 			callsign === undefined
 				? generateCallsign()
-				: normalizeDatablockText('Callsign', callsign, 3, 7);
+				: normalizeCallsign(callsign);
 
 		assertIdentityAvailable('CID', normalizedCid, allocatedCids);
 		assertIdentityAvailable(
@@ -216,10 +218,7 @@ export class Aircraft {
 	}
 
 	get trk(): ASVector {
-		return ASVector.fromXY(
-			this.vel.x + simState.atmosphere.windVel.x,
-			this.vel.y + simState.atmosphere.windVel.y,
-		);
+		return this.vel.copy().add(simState.atmosphere.windVel);
 	}
 
 	updatePosition(hours: number): void {
@@ -280,11 +279,13 @@ function generateCallsign(): string {
 		throw new Error('No unique generated callsigns remain.');
 	}
 
+	// Attempt random generation
 	for (let i = 0; i < RANDOM_ID_ATTEMPTS; i++) {
 		const callsign = `N${generateRandomDigits(3)}${generateRandomLetters(2)}`;
 		if (!allocatedCallsigns.has(callsign)) return callsign;
 	}
 
+	// If random generation fails, force generate
 	for (let number = 0; number < MAX_CIDS; number++) {
 		for (let firstLetter = 0; firstLetter < 26; firstLetter++) {
 			for (let secondLetter = 0; secondLetter < 26; secondLetter++) {
@@ -324,8 +325,20 @@ function letterAt(index: number): string {
 
 function normalizeCid(cid: string): string {
 	const normalized = cid.trim();
-	if (!/^\d{3}$/.test(normalized)) {
-		throw new Error('CID must be exactly 3 digits.');
+	if (!CID_REGEX.test(normalized)) {
+		throw new Error(
+			'CID must be 3 characters and first character must be a number.',
+		);
+	}
+	return normalized;
+}
+
+function normalizeCallsign(callsign: string): string {
+	const normalized = callsign.trim();
+	if (!CALLSIGN_REGEX.test(normalized)) {
+		throw new Error(
+			'Callsign must be 4-7 characters and first character must be a letter.',
+		);
 	}
 	return normalized;
 }
