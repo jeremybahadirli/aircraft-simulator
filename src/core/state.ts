@@ -2,7 +2,6 @@ import type { ASVector } from '../math/asvector.js';
 import type { Aircraft } from '../simulation/aircraft.js';
 import { resetAircraftIdentityRegistry } from '../simulation/aircraft.js';
 import type { Atmosphere } from '../simulation/atmosphere.js';
-import { autoPosition, separationPractice } from '../simulation/positioning.js';
 import type { Proximity } from '../simulation/proximity.js';
 import type { Stat } from '../simulation/stat.js';
 
@@ -118,15 +117,6 @@ export function preConfig(): void {
 }
 
 export function postConfig(): void {
-	switch (simState.settings.mode) {
-		case 'separation_practice':
-			separationPractice();
-			break;
-		case 'auto_position':
-			autoPosition(simState.aircraftList[0], simState.aircraftList[1]);
-			break;
-	}
-
 	simState.defaultPlaybackSpeed = simState.settings.playbackSpeed;
 	simState.time = simState.settings.startTimeMins / 60;
 	simState.lastUpdate = simState.time;

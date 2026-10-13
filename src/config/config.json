@@ -1,0 +1,42 @@
+{
+	"settings": {
+		"playbackSpeed": 1,
+		"secondsPerUpdate": 12,
+		"startTimeMins": 0,
+		"vRange": 100,
+		"statsDecimalPlaces": 0,
+		"proximityDecimalPlaces": 1,
+		"mode": "separation_practice"
+	},
+
+	"atmosphere": {
+		"wind": { "from": 360, "speed": 0 },
+		"seaLevelTemp": 15,
+		"seaLevelPressure": 29.92
+	},
+
+	"aircraftList": [
+		{
+			"callsign": "N123AS",
+			"position": { "x": 20, "y": 12 },
+			"track": 180,
+			"alt": 200,
+			"ias": 300,
+			"display": {}
+		},
+		{
+			"position": { "r": 10, "d": 5 },
+			"directFix": { "x": 0, "y": 0 },
+			"alt": 200,
+			"tas": 360,
+			"display": {
+				"halo": true,
+				"datablockSlot": 8
+			}
+		}
+	],
+
+	"stats": [{ "flid": "N123AS" }],
+
+	"proximities": [{ "flid1": "N123AS", "index2": 1 }]
+}

@@ -14,7 +14,7 @@ interface AircraftReference {
 export function resolveAircraftReference(
 	aircraftList: readonly Aircraft[],
 	{ flid, index }: AircraftReference,
-): Aircraft {
+): Aircraft | undefined {
 	if (flid !== undefined) {
 		const normalizedFlid = flid.trim().toUpperCase();
 		const aircraft = aircraftList.find(
@@ -22,16 +22,10 @@ export function resolveAircraftReference(
 				aircraft.cid === normalizedFlid ||
 				aircraft.callsign === normalizedFlid,
 		);
-		if (aircraft === undefined) {
-			throw new Error(`Unknown aircraft "${flid}".`);
-		}
 		return aircraft;
 	}
 	if (index !== undefined) {
 		const aircraft = aircraftList[index];
-		if (aircraft === undefined) {
-			throw new Error(`Invalid aircraft index "${index}".`);
-		}
 		return aircraft;
 	}
 	throw new Error(`Aircraft lookup missing FLID or index.`);

@@ -5,12 +5,12 @@
 	"definitions": {
 		"stats": {
 			"type": "array",
-			"description": "Configures aircraft stat readouts.\n\nEach entry needs an aircraft, which can be defined by \"flid\" or \"index\". FLID is the CID or callsign, and index is the position of the aircraft in the aircraftList, with the first aircraft being 0.\n\n\"label\" is optional. If no label is provided, the callsign will be used.",
+			"description": "Configures aircraft stat readouts in the console.\n\nEach entry needs an aircraft, which can be defined by \"flid\" or \"index\". FLID is the CID or callsign, and index is the position of the aircraft in the aircraftList, with the first aircraft being 0.\n\n\"label\" is optional. If no label is provided, the callsign will be used.",
 			"items": { "$ref": "#/definitions/stat" }
 		},
 		"proximities": {
 			"type": "array",
-			"description": "Configures proximity readouts.\n\nEach entry needs at least one aircraft, which can be defined by \"flid1\" or \"index1\". FLID is the CID or callsign, and index is the position of the aircraft in the aircraftList, with the first aircraft being 0.\n\nThe second point may be either \"flid2\" or \"index2\", or an xyPosition or frdPosition relative to the origin.",
+			"description": "Configures proximity readouts in the console.\n\nEach entry needs at least one aircraft, which can be defined by \"flid1\" or \"index1\". FLID is the CID or callsign, and index is the position of the aircraft in the aircraftList, with the first aircraft being 0.\n\nThe second point may be either \"flid2\" or \"index2\", or \"position\".",
 			"items": { "$ref": "#/definitions/proximity" }
 		},
 		"stat": {
@@ -43,8 +43,9 @@
 					"minimum": 0,
 					"description": "Zero-based index of the target aircraft in aircraftList."
 				},
-				"xyPosition": { "$ref": "#/definitions/xyPosition" },
-				"frdPosition": { "$ref": "#/definitions/frdPosition" },
+				"position": {
+					"$ref": "#/definitions/position"
+				},
 				"label": { "$ref": "#/definitions/label" }
 			},
 			"oneOf": [{ "required": ["flid1"] }, { "required": ["index1"] }],
@@ -53,19 +54,17 @@
 					"oneOf": [
 						{ "required": ["flid2"] },
 						{ "required": ["index2"] },
-						{ "required": ["xyPosition"] },
-						{ "required": ["frdPosition"] }
+						{ "required": ["position"] }
 					]
 				}
 			]
 		},
-		"xyPosition": {
-			"description": "xy position relative to the origin.\n+x is right\n+y is up",
-			"allOf": [{ "$ref": "#/definitions/xyPositionShape" }]
-		},
-		"frdPosition": {
-			"description": "Position expressed as a radial and distance from the origin.\nr: radial in degrees\nd: distance in NM",
-			"allOf": [{ "$ref": "#/definitions/frdPositionShape" }]
+		"position": {
+			"description": "Defines a position on the map. Positions can be either an x/y coordinate or a radial/distance relative to the origin:\n\n\t{\"x\": Number, \"y\": Number}\n\t{\"r\": Number, \"d\": Number}",
+			"oneOf": [
+				{ "$ref": "#/definitions/xyPositionShape" },
+				{ "$ref": "#/definitions/frdPositionShape" }
+			]
 		},
 		"xyPositionShape": {
 			"type": "object",
@@ -96,7 +95,7 @@
 		},
 		"callsign": {
 			"type": "string",
-			"description": "2-7 chars beginning with a letter",
+			"description": "2-7 chars beginning with a letter.",
 			"pattern": "^[A-Z][A-Z0-9]{1,6}$"
 		},
 		"flid": {

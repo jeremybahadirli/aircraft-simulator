@@ -10,12 +10,18 @@
 	},
 	"json.schemas": [
 		{
-			"fileMatch": ["/src/config.json"],
-			"url": "./src/config.schema.json"
+			"fileMatch": [
+				"/src/config/config.json",
+				"/src/config/default-config.json"
+			],
+			"url": "./src/config/schemas/config.schema.json"
 		},
 		{
-			"fileMatch": ["/src/separation-practice-config.json"],
-			"url": "./src/separation-practice-config.schema.json"
+			"fileMatch": [
+				"/src/config/separation-practice-config.json",
+				"/src/config/default-separation-practice-config.json"
+			],
+			"url": "./src/config/schemas/separation-practice-config.schema.json"
 		}
 	]
 }

@@ -1,0 +1,55 @@
+{
+	"settings": {
+		"playbackSpeed": 1,
+		"secondsPerUpdate": 12,
+		"vRange": 100,
+		"statsDecimalPlaces": 0,
+		"proximityDecimalPlaces": 1
+	},
+
+	"separationPracticeSettings": {
+		"startTimeRange": {
+			"min": -6,
+			"max": -8
+		},
+		"minSeparationRange": {
+			"min": 4.5,
+			"max": 5.5
+		},
+		"leadSpeedRange": {
+			"min": 300,
+			"max": 600
+		},
+		"angleRange": {
+			"min": 15,
+			"max": 135
+		},
+		"speedDifferenceRange": {
+			"min": -60,
+			"max": 60
+		}
+	},
+
+	"stats": [
+		{ "index": 0, "label": "Front Stats" },
+		{ "index": 1, "label": "Back Stats" }
+	],
+
+	"proximities": [
+		{
+			"index1": 0,
+			"position": { "x": 0, "y": 0 },
+			"label": "Front CRR"
+		},
+		{
+			"index1": 1,
+			"position": { "x": 0, "y": 0 },
+			"label": "Back CRR"
+		},
+		{
+			"index1": 0,
+			"index2": 1,
+			"label": "Separation"
+		}
+	]
+}

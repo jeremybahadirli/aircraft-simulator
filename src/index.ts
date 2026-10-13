@@ -1,4 +1,4 @@
-import { initConfig } from './core/config.js';
+import { initConfig } from './config/config.js';
 import { MILLIS_PER_HOUR } from './core/constants.js';
 import { simState, uiState } from './core/state.js';
 import { createViewport } from './core/viewport.js';

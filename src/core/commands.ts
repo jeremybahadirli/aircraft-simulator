@@ -47,6 +47,7 @@ function executeDatablockSlotCommand(
 	const aircraft = resolveAircraftReference(simState.aircraftList, {
 		flid: flid,
 	});
+	console.log(aircraft)
 	if (!aircraft) return unknownFlid(flid);
 
 	aircraft.display.datablockSlot = slot;

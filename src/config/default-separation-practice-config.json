@@ -38,12 +38,12 @@
 	"proximities": [
 		{
 			"index1": 0,
-			"xyPosition": { "x": 0, "y": 0 },
+			"position": { "x": 0, "y": 0 },
 			"label": "Front CRR"
 		},
 		{
 			"index1": 1,
-			"xyPosition": { "x": 0, "y": 0 },
+			"position": { "x": 0, "y": 0 },
 			"label": "Back CRR"
 		},
 		{

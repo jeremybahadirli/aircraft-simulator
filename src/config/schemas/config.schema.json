@@ -16,7 +16,7 @@
 		"atmosphere": { "$ref": "#/definitions/atmosphere" },
 		"aircraftList": {
 			"type": "array",
-			"description": "Configures the list of aircraft. Each aircraft has a CID, callsign, position, direction, altitude, speed, and display options. CID and callsign may omitted and they'll be randomly generated. There are multiple ways to define position, direction, and speed:\n\n\tPosition: xyPosition or frdPosition\n\tDirection: heading or track or directFix. directFix is a coordinate, either an xyPosition or frdPosition\n\tSpeed: tas or ias or mach",
+			"description": "Configures the list of aircraft.\n\nEach aircraft has a CID, callsign, position, direction, altitude, speed, and display options. CID and callsign may omitted and they'll be randomly generated. There are multiple ways to define direction and speed:\n\n\tDirection: \"heading\", \"track\", or \"directFix\", where \"directFix\" is a position on the map.\n\tSpeed: \"tas\", \"ias\" or \"mach\".",
 			"items": { "$ref": "#/definitions/aircraft" }
 		},
 		"stats": { "$ref": "./shared-config.schema.json#/definitions/stats" },
@@ -68,7 +68,7 @@
 		},
 		"atmosphere": {
 			"type": "object",
-			"description": "Configures the atmosphere. Sea level temperature and pressure affect how ias and mach change with altitude.",
+			"description": "Configures the atmosphere.\n\nSea level temperature affects how ias and mach change with altitude. Currently, all altitudes are treated as flight levels, so sea level pressure has no effect.",
 			"additionalProperties": false,
 			"required": ["wind", "seaLevelTemp", "seaLevelPressure"],
 			"properties": {
@@ -108,7 +108,7 @@
 		"aircraft": {
 			"type": "object",
 			"additionalProperties": false,
-			"required": ["alt", "display"],
+			"required": ["position", "alt", "display"],
 			"properties": {
 				"cid": {
 					"$ref": "./shared-config.schema.json#/definitions/cid"
@@ -116,11 +116,8 @@
 				"callsign": {
 					"$ref": "./shared-config.schema.json#/definitions/callsign"
 				},
-				"xyPosition": {
-					"$ref": "./shared-config.schema.json#/definitions/xyPosition"
-				},
-				"frdPosition": {
-					"$ref": "./shared-config.schema.json#/definitions/frdPosition"
+				"position": {
+					"$ref": "./shared-config.schema.json#/definitions/position"
 				},
 				"heading": {
 					"$ref": "#/definitions/direction"
@@ -129,15 +126,7 @@
 					"$ref": "#/definitions/direction"
 				},
 				"directFix": {
-					"description": "Fix the aircraft will fly directly toward. Either x/y coordinates or radial/distance coordinates from the origin.",
-					"oneOf": [
-						{
-							"$ref": "./shared-config.schema.json#/definitions/xyPositionShape"
-						},
-						{
-							"$ref": "./shared-config.schema.json#/definitions/frdPositionShape"
-						}
-					]
+					"$ref": "./shared-config.schema.json#/definitions/position"
 				},
 				"alt": {
 					"type": "number",
@@ -161,12 +150,6 @@
 			"allOf": [
 				{
 					"oneOf": [
-						{ "required": ["xyPosition"] },
-						{ "required": ["frdPosition"] }
-					]
-				},
-				{
-					"oneOf": [
 						{ "required": ["heading"] },
 						{ "required": ["track"] },
 						{ "required": ["directFix"] }
@@ -183,7 +166,7 @@
 		},
 		"aircraftDisplay": {
 			"type": "object",
-			"description": "Data block display options. All of these are optional.\n\tcolor: JavaScript color string\n\thalo: true/false\n\thaloRadiusNm: radius of halo in NM\n\tshowDatablock: true/false\n\tdatablockSlot: numpad direction of data block",
+			"description": "Data block display options. All of these are optional.\n\tcolor: JavaScript color string.\n\thalo: true/false.\n\thaloRadiusNm: radius of halo in NM.\n\tshowDatablock: true/false.\n\tdatablockSlot: numpad direction of data block.",
 			"additionalProperties": false,
 			"properties": {
 				"color": {
