@@ -23,6 +23,7 @@ const DEFAULT_AIRCRAFT_DISPLAY: AircraftDisplay = {
 	showDatablock: true,
 	datablockSlot: 2,
 };
+const MAX_HISTORY_TARGETS = 3;
 const MAX_CIDS = 1000;
 const MAX_CALLSIGNS = MAX_CIDS * 26 * 26;
 const RANDOM_ID_ATTEMPTS = 1000;
@@ -67,6 +68,7 @@ export class Aircraft {
 	display: AircraftDisplay;
 	prevPos?: ASVector;
 	prevVel?: ASVector;
+	histories: ASVector[] = [];
 
 	constructor({
 		cid,
@@ -248,6 +250,13 @@ export class Aircraft {
 
 	maintain(speed: SpeedSpec): void {
 		this.tas = resolveTas(speed, this.alt);
+	}
+
+	recordHistory(): void {
+		this.histories.push(this.pos.copy());
+		if (this.histories.length > MAX_HISTORY_TARGETS) {
+			this.histories.shift();
+		}
 	}
 }
 

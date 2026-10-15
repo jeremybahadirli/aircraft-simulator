@@ -6,7 +6,8 @@ import { formatNumber, getMousePos } from '../simulation/utils.js';
 
 const CROSSHAIR_ARM_PX = 10;
 const GRID_STEP_NM = 10;
-const TARGET_POINT_PX = 8;
+const TARGET_POINT_PX = 6;
+const HISTORY_TARGET_COLOR = '#837603';
 const TARGET_PADDING_PX = 4;
 const VECTOR_STROKE_PX = 1.5;
 const LEADER_STROKE_PX = 2;
@@ -176,6 +177,12 @@ function drawAircraftSymbol(ac: Aircraft, viewport: Viewport): void {
 	const color = ac.display.color;
 
 	push();
+	stroke(HISTORY_TARGET_COLOR);
+	strokeWeight(TARGET_POINT_PX);
+	ac.histories.forEach((historyPos) => {
+		drawViewPoint(viewport, viewport.worldToView(historyPos));
+	});
+
 	fill(color);
 	stroke(color);
 	strokeCap(SQUARE);
