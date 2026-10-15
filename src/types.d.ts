@@ -39,6 +39,7 @@ declare namespace p5 {
 		attribute(name: string, value: string): this;
 		changed(handler: () => void): this;
 		mouseClicked(handler: () => void): this;
+		mousePressed(handler: () => void): this;
 		parent(parent: Element | HTMLElement | string): this;
 		style(property: string, value: StyleValue): this;
 	}

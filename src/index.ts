@@ -33,7 +33,7 @@ function setup(): void {
 	uiState.canvas = createCanvas().parent(uiState.canvasDiv!);
 	handleWindowResized();
 
-	uiState.canvas!.mouseClicked(() => {
+	uiState.canvas!.mousePressed(() => {
 		if (simState.rngBrgMode) {
 			if (simState.rngBrgPos === null) {
 				simState.rngBrgPos = getMousePos(mouseX, mouseY);
