@@ -6,15 +6,17 @@ import separationPracticeConfig from './separation-practice-config.json' with { 
 import separationPracticeConfigSchema from './schemas/separation-practice-config.schema.json' with { type: 'json' };
 import sharedConfigSchema from './schemas/shared-config.schema.json' with { type: 'json' };
 import {
-	postConfig,
-	preConfig,
 	simState,
 	uiState,
 	type SeparationPracticeSettings,
 	type SimulationSettings,
 } from '../core/state.js';
 import { ASVector } from '../math/asvector.js';
-import { Aircraft, type AircraftDisplay } from '../simulation/aircraft.js';
+import {
+	Aircraft,
+	resetAircraftIdentityRegistry,
+	type AircraftDisplay,
+} from '../simulation/aircraft.js';
 import {
 	Atmosphere,
 	type AtmosphereOptions,
@@ -277,7 +279,12 @@ function initializeSeparationPractice(
 }
 
 export function initConfig(): void {
-	preConfig();
+	resetAircraftIdentityRegistry();
+
+	simState.nextLogTime = 0;
+	simState.logLines = ['  '];
+	simState.logDirty = false;
+
 	const configData = validateConfigData<Config>(
 		config,
 		configSchema,
@@ -290,5 +297,8 @@ export function initConfig(): void {
 		initializeConfiguredScenario(configData);
 	}
 
-	postConfig();
+	simState.defaultPlaybackSpeed = simState.settings.playbackSpeed;
+	simState.time = simState.settings.startTimeMins / 60;
+	simState.lastUpdate = simState.time;
+	simState.nextUpdate = simState.time;
 }

@@ -107,18 +107,3 @@ export const uiState: UIState = {
 	practiceAnswerButton: null,
 	displayPracticeAnswerButton: false,
 };
-
-export function preConfig(): void {
-	resetAircraftIdentityRegistry();
-
-	simState.nextLogTime = 0;
-	simState.logLines = ['  '];
-	simState.logDirty = false;
-}
-
-export function postConfig(): void {
-	simState.defaultPlaybackSpeed = simState.settings.playbackSpeed;
-	simState.time = simState.settings.startTimeMins / 60;
-	simState.lastUpdate = simState.time;
-	simState.nextUpdate = simState.time;
-}

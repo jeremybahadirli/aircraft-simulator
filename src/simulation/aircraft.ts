@@ -86,12 +86,9 @@ export class Aircraft {
 				? generateCallsign()
 				: normalizeCallsign(callsign);
 
-		assertIdentityAvailable('CID', normalizedCid, allocatedCids);
-		assertIdentityAvailable(
-			'Callsign',
-			normalizedCallsign,
-			allocatedCallsigns,
-		);
+		// TODO: Make FLID management class
+		assertIdentityAvailable(normalizedCid, allocatedCids);
+		assertIdentityAvailable(normalizedCallsign, allocatedCallsigns);
 		allocatedCids.add(normalizedCid);
 		allocatedCallsigns.add(normalizedCallsign);
 
@@ -270,11 +267,13 @@ function generateCid(): string {
 		throw new Error('No unique 3-digit CIDs remain.');
 	}
 
+	// Attempt random generation
 	for (let i = 0; i < RANDOM_ID_ATTEMPTS; i++) {
 		const cid = generateRandomDigits(3);
 		if (!allocatedCids.has(cid)) return cid;
 	}
 
+	// If random generation fails, force generate
 	for (let i = 0; i < MAX_CIDS; i++) {
 		const cid = i.toString().padStart(3, '0');
 		if (!allocatedCids.has(cid)) return cid;
@@ -368,11 +367,10 @@ function normalizeDatablockText(
 }
 
 function assertIdentityAvailable(
-	label: string,
 	value: string,
 	allocatedValues: Set<string>,
 ): void {
 	if (allocatedValues.has(value)) {
-		throw new Error(`${label} ${value} is already assigned.`);
+		throw new Error(`FLID ${value} is already assigned.`);
 	}
 }
