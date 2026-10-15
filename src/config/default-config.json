@@ -17,18 +17,18 @@
 
 	"aircraftList": [
 		{
-			"callsign": "N123AS",
+			"callsign": "N737KG",
 			"position": { "x": 0, "y": 10 },
 			"track": 180,
 			"alt": 200,
-			"ias": 300,
+			"tas": 300,
 			"display": {}
 		},
 		{
 			"position": { "r": 100, "d": 5 },
 			"directFix": { "x": 0, "y": 0 },
 			"alt": 200,
-			"tas": 360,
+			"mach": 0.79,
 			"display": {
 				"halo": true,
 				"datablockSlot": 8
