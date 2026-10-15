@@ -10,7 +10,7 @@
 		},
 		"proximities": {
 			"type": "array",
-			"description": "Configures proximity readouts in the console.\n\nEach entry needs at least one aircraft, which can be defined by \"flid1\" or \"index1\". FLID is the CID or callsign, and index is the position of the aircraft in the aircraftList, with the first aircraft being 0.\n\nThe second point may be either \"flid2\" or \"index2\", or \"position\".",
+			"description": "Configures proximity readouts in the console.\n\nEach entry needs two points, which can be a FLID, index, or position. FLID is the CID or callsign, and index is the position of the aircraft in the aircraftList, with the first aircraft being 0.\n\nThe first point must be an aircraft, either \"flid1\" or \"index1\". The second point may be another aircraft or a position, either \"flid2\", \"index2\", or \"position\".",
 			"items": { "$ref": "#/definitions/proximity" }
 		},
 		"stat": {
