@@ -1,12 +1,12 @@
 {
 	"settings": {
+		"mode": "normal",
 		"playbackSpeed": 1,
 		"secondsPerUpdate": 12,
 		"startTimeMins": 0,
 		"vRange": 100,
 		"statsDecimalPlaces": 0,
-		"proximityDecimalPlaces": 1,
-		"mode": "normal"
+		"proximityDecimalPlaces": 1
 	},
 	"atmosphere": {
 		"wind": { "from": 360, "speed": 0 },
