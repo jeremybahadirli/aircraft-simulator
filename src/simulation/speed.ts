@@ -6,10 +6,7 @@ export type SpeedSpec =
 	| { unit: 'ias'; value: number }
 	| { unit: 'mach'; value: number };
 
-export function resolveTas(
-	speed: SpeedSpec,
-	altitude: number,
-): number {
+export function resolveTas(speed: SpeedSpec, altitude: number): number {
 	const tempC = simState.atmosphere.getTemperatureCAtAltitude(altitude);
 
 	switch (speed.unit) {
