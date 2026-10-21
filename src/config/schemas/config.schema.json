@@ -16,7 +16,7 @@
 		"atmosphere": { "$ref": "#/definitions/atmosphere" },
 		"aircraftList": {
 			"type": "array",
-			"description": "Configures the list of aircraft.\n\nEach aircraft has a CID, callsign, position, direction, altitude, speed, and display options. CID and callsign may omitted and they'll be randomly generated. There are multiple ways to define direction and speed:\n\n\tDirection: \"heading\", \"track\", or \"directFix\", where \"directFix\" is a position on the map.\n\tSpeed: \"tas\", \"ias\" or \"mach\".",
+			"markdownDescription": "Configures the list of aircraft.\n\nEach aircraft has a CID, callsign, position, direction, altitude, speed, fourth line, and display options. CID, callsign, and fourth line may be omitted and they'll be randomly generated. There are multiple ways to define direction and speed:\n\n- **Direction:** `heading`, `track`, or `directFix`, where `directFix` is a position on the map.\n- **Speed:** `tas`, `ias`, or `mach`.",
 			"items": { "$ref": "#/definitions/aircraft" }
 		},
 		"stats": { "$ref": "./shared-config.schema.json#/definitions/stats" },
@@ -45,7 +45,7 @@
 					"$ref": "./shared-config.schema.json#/definitions/secondsPerUpdate"
 				},
 				"startTimeMins": {
-					"description": "Time at the beginning of the simulation in minutes.",
+					"markdownDescription": "Time at the beginning of the simulation in minutes.",
 					"type": "number",
 					"default": 0
 				},
@@ -59,7 +59,7 @@
 					"$ref": "./shared-config.schema.json#/definitions/proximityDecimalPlaces"
 				},
 				"mode": {
-					"description": "Simulator mode.\n\t\"normal\": Uses the aircraft list and other settings defined in config.json (this file).\n\t\"separation_practice\": Separation Practice mode. Uses random aircraft and settings defined in separation-practice-config.json.\n\t\"auto_position\": Automatically positions Aircraft 1 south of Aircraft 0 such that they will pass at 5 NM separation. Normally, Aircraft 0 should be placed at (0, 0) on a heading, and Aircraft 1 should be placed at (0, 0) on a 360 track.\"",
+			"markdownDescription": "Simulator mode.\n\n- `normal`: Uses the aircraft list and other settings defined in `config.json`.\n- `separation_practice`: Separation Practice mode. Generates random aircraft and uses settings defined in `separation-practice-config.json`.\n- `auto_position`: Automatically positions Aircraft 1 south of Aircraft 0 such that they will pass at 5 NM separation. Normally, place Aircraft 0 at `(0, 0)` on a heading and Aircraft 1 at `(0, 0)` on a 360 track.",
 					"type": "string",
 					"enum": ["normal", "separation_practice", "auto_position"],
 					"default": "normal"
@@ -68,21 +68,21 @@
 		},
 		"atmosphere": {
 			"type": "object",
-			"description": "Configures the atmosphere.\n\nSea level temperature affects how ias and mach change with altitude. Currently, all altitudes are treated as flight levels, so sea level pressure has no effect.",
+			"markdownDescription": "Configures the atmosphere.\n\nSea level temperature affects how ias and mach change with altitude. Currently, all altitudes are treated as flight levels, so sea level pressure has no effect.",
 			"additionalProperties": false,
 			"required": ["wind", "seaLevelTemp", "seaLevelPressure"],
 			"properties": {
 				"wind": { "$ref": "#/definitions/wind" },
 				"seaLevelTemp": {
 					"type": "number",
-					"description": "Sea level temperature in ºC. Standard atmosphere is 15.",
+					"markdownDescription": "Sea level temperature in ºC. Standard atmosphere is 15.",
 					"minimum": -100,
 					"maximum": 60,
 					"default": 15
 				},
 				"seaLevelPressure": {
 					"type": "number",
-					"description": "Sea level pressure in inHg. Standard atmosphere is 29.92.",
+					"markdownDescription": "Sea level pressure in inHg. Standard atmosphere is 29.92.",
 					"minimum": 27,
 					"maximum": 33,
 					"default": 29.92
@@ -96,11 +96,11 @@
 			"properties": {
 				"from": {
 					"$ref": "#/definitions/direction",
-					"description": "Direction from which wind is coming in degrees."
+					"markdownDescription": "Direction from which wind is coming in degrees."
 				},
 				"speed": {
 					"type": "number",
-					"description": "Speed of wind in knots.",
+					"markdownDescription": "Speed of wind in knots.",
 					"default": 0
 				}
 			}
@@ -130,7 +130,7 @@
 				},
 				"alt": {
 					"type": "number",
-					"description": "Altitude in hundreds of feet MSL."
+					"markdownDescription": "Altitude in hundreds of feet MSL."
 				},
 				"tas": {
 					"type": "number",
@@ -144,6 +144,10 @@
 					"type": "number",
 					"minimum": 0,
 					"exclusiveMaximum": 1
+				},
+				"fourthLine": {
+					"type": "string",
+					"pattern": "^[A-Z0-9+-]{0,8}$"
 				},
 				"display": { "$ref": "#/definitions/aircraftDisplay" }
 			},
@@ -166,12 +170,12 @@
 		},
 		"aircraftDisplay": {
 			"type": "object",
-			"description": "Data block display options. All of these are optional.\n\tcolor: JavaScript color string.\n\thalo: true/false.\n\thaloRadiusNm: radius of halo in NM.\n\tshowDatablock: true/false.\n\tdatablockSlot: numpad direction of data block.",
+			"markdownDescription": "Data block display options. All of these are optional.\n\n- `color`: JavaScript color string.\n- `halo`: `true` or `false`.\n- `haloRadiusNm`: Radius of halo in NM.\n- `showDatablock`: `true` or `false`.\n- `datablockSlot`: Numpad direction of data block.",
 			"additionalProperties": false,
 			"properties": {
 				"color": {
 					"type": "string",
-					"description": "Must be a valid JavaScript color string. Ex:\n\n\tred\n\t#00ff00\n\trgb(0,0,255)"
+					"markdownDescription": "Must be a valid JavaScript color string. Ex:\n\n- `red`\n- `#00ff00`\n- `rgb(0, 0, 255)`"
 				},
 				"halo": { "type": "boolean" },
 				"haloRadiusNm": {

@@ -1,8 +1,8 @@
 import { Ajv } from 'https://cdn.jsdelivr.net/npm/ajv@8.20.0/+esm';
 import type { Schema } from 'ajv';
-import config from './config.json' with { type: 'json' };
+import defaultConfig from './default-config.json' with { type: 'json' };
 import configSchema from './schemas/config.schema.json' with { type: 'json' };
-import separationPracticeConfig from './separation-practice-config.json' with { type: 'json' };
+import defaultSeparationPracticeConfig from './default-separation-practice-config.json' with { type: 'json' };
 import separationPracticeConfigSchema from './schemas/separation-practice-config.schema.json' with { type: 'json' };
 import sharedConfigSchema from './schemas/shared-config.schema.json' with { type: 'json' };
 import {
@@ -27,6 +27,12 @@ import type { SpeedSpec } from '../simulation/speed.js';
 import { Stat } from '../simulation/stat.js';
 import { randBetween, resolveAircraftReference } from '../simulation/utils.js';
 
+const ACTIVE_CONFIG_STORAGE_KEY = 'aircraft-simulator.active-config';
+const ACTIVE_SEPARATION_PRACTICE_CONFIG_STORAGE_KEY =
+	'aircraft-simulator.active-separation-practice-config';
+
+export type ConfigEditorDocument = 'config' | 'separation-practice';
+
 type ConfigPosition = { x: number; y: number } | { r: number; d: number };
 
 interface ConfigRange {
@@ -45,6 +51,7 @@ interface ConfigAircraft {
 	tas?: number;
 	ias?: number;
 	mach?: number;
+	fourthLine?: string;
 	display: Partial<AircraftDisplay>;
 }
 
@@ -84,6 +91,84 @@ interface SeparationPracticeConfig {
 	proximities: ConfigProximity[];
 }
 
+export interface ConfigEditorData {
+	configText: string;
+	defaultConfigText: string;
+	separationPracticeConfigText: string;
+	defaultSeparationPracticeConfigText: string;
+	configSchema: Schema;
+	separationPracticeConfigSchema: Schema;
+	sharedConfigSchema: Schema;
+}
+
+function readStoredConfig(storageKey: string): unknown | undefined {
+	try {
+		const storedConfig = localStorage.getItem(storageKey);
+		return storedConfig === null ? undefined : JSON.parse(storedConfig);
+	} catch {
+		return undefined;
+	}
+}
+
+let activeConfigData: unknown = readStoredConfig(ACTIVE_CONFIG_STORAGE_KEY) ?? defaultConfig;
+let activeSeparationPracticeConfigData: unknown =
+	readStoredConfig(ACTIVE_SEPARATION_PRACTICE_CONFIG_STORAGE_KEY) ??
+	defaultSeparationPracticeConfig;
+
+export function getConfigEditorData(): ConfigEditorData {
+	return {
+		configText: JSON.stringify(activeConfigData, null, '\t'),
+		defaultConfigText: JSON.stringify(defaultConfig, null, '\t'),
+		separationPracticeConfigText: JSON.stringify(
+			activeSeparationPracticeConfigData,
+			null,
+			'\t',
+		),
+		defaultSeparationPracticeConfigText: JSON.stringify(
+			defaultSeparationPracticeConfig,
+			null,
+			'\t',
+		),
+		configSchema,
+		separationPracticeConfigSchema,
+		sharedConfigSchema,
+	};
+}
+
+export function persistActiveConfig(
+	document: ConfigEditorDocument,
+): boolean {
+	try {
+		const storageKey =
+			document === 'config'
+				? ACTIVE_CONFIG_STORAGE_KEY
+				: ACTIVE_SEPARATION_PRACTICE_CONFIG_STORAGE_KEY;
+		const configData =
+			document === 'config'
+				? activeConfigData
+				: activeSeparationPracticeConfigData;
+		localStorage.setItem(
+			storageKey,
+			JSON.stringify(configData),
+		);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+export function validateConfig(configData: unknown): void {
+	validateConfigData<Config>(configData, configSchema, 'Invalid config');
+}
+
+export function validateSeparationPracticeConfig(configData: unknown): void {
+	validateConfigData<SeparationPracticeConfig>(
+		configData,
+		separationPracticeConfigSchema,
+		'Invalid separation practice config',
+	);
+}
+
 function positionToVector(position: ConfigPosition): ASVector {
 	if ('x' in position) {
 		return ASVector.fromXY(position.x, position.y);
@@ -98,6 +183,7 @@ function createAircraft(aircraft: ConfigAircraft): Aircraft {
 		pos: positionToVector(aircraft.position),
 		alt: aircraft.alt,
 		speed: getSpeed(aircraft),
+		datablockFourthLine: aircraft.fourthLine,
 		display: aircraft.display,
 	};
 
@@ -181,10 +267,13 @@ function validateConfigData<T>(
 	errorMessage: string,
 ): T {
 	const ajv = new Ajv();
+	ajv.addKeyword('markdownDescription');
 	ajv.addSchema(sharedConfigSchema);
 	const validate = ajv.compile(schema);
 	if (validate(data) !== true) {
-		throw new Error(errorMessage);
+		throw new Error(
+			`${errorMessage}: ${ajv.errorsText(validate.errors)}`,
+		);
 	}
 	return data as T;
 }
@@ -210,12 +299,8 @@ function initializeConfiguredScenario(configData: Config): void {
 
 function initializeSeparationPractice(
 	configuredMode: SimulationSettings['mode'],
+	configData: SeparationPracticeConfig,
 ): void {
-	const configData = validateConfigData<SeparationPracticeConfig>(
-		separationPracticeConfig,
-		separationPracticeConfigSchema,
-		'Invalid separation practice configuration',
-	);
 	const ranges = configData.separationPracticeSettings;
 	const practiceSettings: SeparationPracticeSettings = {
 		startTimeMins: randBetween(
@@ -278,24 +363,44 @@ function initializeSeparationPractice(
 	uiState.displayPracticeAnswerButton = true;
 }
 
-export function initConfig(): void {
+export function initConfig(
+	configOverride?: unknown,
+	separationPracticeConfigOverride?: unknown,
+): void {
+	const sourceConfig = configOverride === undefined
+		? activeConfigData
+		: configOverride;
+	const sourceSeparationPracticeConfig =
+		separationPracticeConfigOverride === undefined
+			? activeSeparationPracticeConfigData
+			: separationPracticeConfigOverride;
+	const configData = validateConfigData<Config>(
+		sourceConfig,
+		configSchema,
+		'Invalid config',
+	);
+	const separationPracticeConfigData = validateConfigData<SeparationPracticeConfig>(
+		sourceSeparationPracticeConfig,
+		separationPracticeConfigSchema,
+		'Invalid separation practice config',
+	);
+
 	resetAircraftIdentityRegistry();
 
 	simState.nextLogTime = 0;
 	simState.logLines = ['  '];
 	simState.logDirty = false;
 
-	const configData = validateConfigData<Config>(
-		config,
-		configSchema,
-		'Invalid config',
-	);
-
 	if (configData.settings.mode === 'separation_practice') {
-		initializeSeparationPractice(configData.settings.mode);
+		initializeSeparationPractice(
+			configData.settings.mode,
+			separationPracticeConfigData,
+		);
 	} else {
 		initializeConfiguredScenario(configData);
 	}
+	activeConfigData = configData;
+	activeSeparationPracticeConfigData = separationPracticeConfigData;
 
 	simState.defaultPlaybackSpeed = simState.settings.playbackSpeed;
 	simState.time = simState.settings.startTimeMins / 60;

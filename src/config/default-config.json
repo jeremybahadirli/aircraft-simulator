@@ -8,13 +8,11 @@
 		"proximityDecimalPlaces": 1,
 		"mode": "normal"
 	},
-
 	"atmosphere": {
 		"wind": { "from": 360, "speed": 0 },
 		"seaLevelTemp": 15,
 		"seaLevelPressure": 29.92
 	},
-
 	"aircraftList": [
 		{
 			"callsign": "N737KG",
@@ -35,8 +33,6 @@
 			}
 		}
 	],
-
-	"stats": [{ "flid": "N123AS" }],
-
-	"proximities": [{ "flid1": "N123AS", "index2": 1 }]
+	"stats": [{ "flid": "N737KG" }],
+	"proximities": [{ "flid1": "N737KG", "index2": 1 }]
 }

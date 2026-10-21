@@ -1,5 +1,20 @@
 import { executeCommand } from '../core/commands.js';
 import { simState, uiState } from '../core/state.js';
+import {
+	getConfigEditorData,
+	type ConfigEditorDocument,
+} from '../config/config.js';
+
+interface ConfigSaveResult {
+	success: boolean;
+	message: string;
+	mode?: 'normal' | 'separation_practice' | 'auto_position';
+}
+
+type ConfigSaveHandler = (
+	document: ConfigEditorDocument,
+	configText: string,
+) => ConfigSaveResult;
 
 const CONSOLE_FONT_SIZE = '16px';
 const CONSOLE_HEIGHT_LH_PADDING = 3;
@@ -20,7 +35,16 @@ const SHIFT_COMMAND_INPUT_MAP: Readonly<Record<string, string>> = {
 	Slash: '/',
 };
 
-export function createUI(): void {
+let configEditorWindow: Window | null = null;
+let handleConfigSave: ConfigSaveHandler = () => ({
+	success: false,
+	message: 'The simulator is not ready to apply a config.',
+});
+
+export function createUI(onConfigSave: ConfigSaveHandler): void {
+	handleConfigSave = onConfigSave;
+	window.addEventListener('message', handleConfigEditorMessage);
+
 	uiState.canvasDiv = createDiv()
 		.style('flex', '1')
 		.style('min-width', '0')
@@ -128,6 +152,84 @@ export function createUI(): void {
 			simState.settings.secondsPerUpdate = 0;
 			simState.nextUpdate = simState.time;
 		});
+
+	uiState.configButton = createButton('Config...')
+		.parent(uiState.controlsDiv!)
+		.mouseClicked(() => {
+			openConfigWindow();
+		});
+}
+
+function openConfigWindow() {
+	if (configEditorWindow && !configEditorWindow.closed) {
+		configEditorWindow.focus();
+		return;
+	}
+
+	configEditorWindow = window.open(
+		new URL('./config-editor.html', document.baseURI).href,
+		'aircraft-simulator-config',
+		'popup=yes,width=600,height=800',
+	);
+	if (!configEditorWindow) {
+		uiState.configButton?.attribute(
+			'title',
+			'Allow pop-ups to open the config editor.',
+		);
+	}
+}
+
+function handleConfigEditorMessage(event: MessageEvent): void {
+	if (event.origin !== window.location.origin) return;
+	if (!configEditorWindow || event.source !== configEditorWindow) return;
+
+	const message = event.data as
+		| { type: 'config-editor:ready' }
+		| {
+				type: 'config-editor:save';
+				document: ConfigEditorDocument;
+				text: string;
+		  }
+		| undefined;
+	if (message?.type === 'config-editor:ready') {
+		const data = getConfigEditorData();
+		configEditorWindow.postMessage(
+			{ type: 'config-editor:init', mode: simState.settings.mode, ...data },
+			window.location.origin,
+		);
+		return;
+	}
+	if (
+		message?.type !== 'config-editor:save' ||
+		(message.document !== 'config' &&
+			message.document !== 'separation-practice') ||
+		typeof message.text !== 'string'
+	) {
+		return;
+	}
+
+	const result = handleConfigSave(message.document, message.text);
+	configEditorWindow.postMessage(
+		{
+			type: 'config-editor:save-result',
+			document: message.document,
+			text: message.text,
+			...result,
+		},
+		window.location.origin,
+	);
+}
+
+export function refreshUIForConfig(): void {
+	uiState.consoleDiv?.style(
+		'height',
+		`${simState.stats.length + simState.proximities.length + CONSOLE_HEIGHT_LH_PADDING}lh`,
+	);
+	uiState.practiceAnswerButton?.style(
+		'display',
+		uiState.displayPracticeAnswerButton ? '' : 'none',
+	);
+	clearCommandOutput();
 }
 
 export function handleWindowResized(): void {
@@ -226,7 +328,10 @@ function stepVRange(nm: number): void {
 
 function submitCommandInput(): void {
 	const command = uiState.commandInput?.value() ?? '';
-	if (command.trim().length === 0) return;
+	if (command.trim().length === 0) {
+		clearCommandOutput();
+		return;
+	}
 
 	uiState.commandInput?.value('');
 	const result = executeCommand(command);
@@ -263,6 +368,13 @@ function setCommandOutput(accept: boolean, message: string): void {
 		marker,
 		document.createTextNode(` ${accept ? 'ACCEPT' : 'REJECT'}\n${message}`),
 	);
+	uiState.commandOutputDiv.elt.scrollTop =
+		uiState.commandOutputDiv.elt.scrollHeight;
+}
+
+function clearCommandOutput(): void {
+	if (!uiState.commandOutputDiv) return;
+	uiState.commandOutputDiv.elt.replaceChildren();
 	uiState.commandOutputDiv.elt.scrollTop =
 		uiState.commandOutputDiv.elt.scrollHeight;
 }

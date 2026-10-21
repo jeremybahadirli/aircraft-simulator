@@ -64,7 +64,7 @@
 			"properties": {
 				"startTimeRange": {
 					"type": "object",
-					"description": "Range of possible start times of the simulation in minutes. Time 0:00 is the time of closest proximity. Therefore, start times should be negative. The value is randomly chosen between the min and max.",
+					"markdownDescription": "Range of possible start times of the simulation in minutes. Time 0 is the time of closest proximity. Therefore, start times should be negative.\n\nThe value is randomly chosen between the min and max.",
 					"additionalProperties": false,
 					"required": ["min", "max"],
 					"properties": {
@@ -82,7 +82,7 @@
 				},
 				"minSeparationRange": {
 					"type": "object",
-					"description": "Range of possible closest proximities of the aircraft in NM. The value is randomly chosen between the min and max.",
+					"markdownDescription": "Range of possible closest proximities of the aircraft in NM.\n\nThe value is randomly chosen between the min and max.",
 					"additionalProperties": false,
 					"required": ["min", "max"],
 					"properties": {
@@ -100,7 +100,7 @@
 				},
 				"leadSpeedRange": {
 					"type": "object",
-					"description": "Range of possible speeds for the lead aircraft in TAS. The value is randomly chosen between the min and max.",
+					"markdownDescription": "Range of possible speeds for the lead aircraft in TAS.\n\nThe value is randomly chosen between the min and max.",
 					"additionalProperties": false,
 					"required": ["min", "max"],
 					"properties": {
@@ -116,7 +116,7 @@
 				},
 				"angleRange": {
 					"type": "object",
-					"description": "Range of possible intercept angles of the aircraft in degrees. The value is randomly chosen between the min and max.",
+					"markdownDescription": "Range of possible intercept angles of the aircraft in degrees.\n\nThe value is randomly chosen between the min and max.",
 					"additionalProperties": false,
 					"required": ["min", "max"],
 					"properties": {
@@ -134,7 +134,7 @@
 				},
 				"speedDifferenceRange": {
 					"type": "object",
-					"description": "Range of possible speed differences between the lead and trailing aircraft in knots. Negative means faster in back, positive means faster in front. The value is randomly chosen between the min and max.",
+					"markdownDescription": "Range of possible speed differences between the lead and trailing aircraft in knots. Negative means faster in back, positive means faster in front.\n\nThe value is randomly chosen between the min and max.",
 					"additionalProperties": false,
 					"required": ["min", "max"],
 					"properties": {

@@ -67,6 +67,7 @@ export interface UIState {
 	rngBrgLabel: P5InputElement | null;
 	vectorMinsInput: P5SelectElement | null;
 	practiceAnswerButton: P5ButtonElement | null;
+	configButton: P5ButtonElement | null;
 	displayPracticeAnswerButton: boolean;
 }
 
@@ -105,5 +106,6 @@ export const uiState: UIState = {
 	rngBrgLabel: null,
 	vectorMinsInput: null,
 	practiceAnswerButton: null,
+	configButton: null,
 	displayPracticeAnswerButton: false,
 };
