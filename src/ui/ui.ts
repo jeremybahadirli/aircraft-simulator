@@ -16,9 +16,7 @@ type ConfigSaveHandler = (
 	configText: string,
 ) => ConfigSaveResult;
 
-const CONSOLE_FONT_SIZE = '16px';
 const CONSOLE_HEIGHT_LH_PADDING = 3;
-const COMMAND_PANEL_FONT = 'ERAMv300, monospace, ui-monospace';
 const VECTOR_MINS_OPTIONS: readonly number[] = [0, 1, 2, 4, 8];
 const SHIFT_COMMAND_INPUT_MAP: Readonly<Record<string, string>> = {
 	Digit8: '1',
@@ -51,19 +49,13 @@ export function createUI(onConfigSave: ConfigSaveHandler): void {
 		.style('min-height', '0')
 		.style('position', 'relative')
 		.style('cursor', simState.rngBrgMode ? 'none' : '');
+	uiState.canvasDiv.elt.classList.add('simulator-canvas');
 	uiState.consoleDiv = createDiv()
 		.style('display', 'flex')
 		.style('width', '100%')
-		.style(
-			'height',
-			`${
-				simState.stats.length +
-				simState.proximities.length +
-				CONSOLE_HEIGHT_LH_PADDING
-			}lh`,
-		)
 		.style('min-height', '96px')
 		.style('background-color', '#111');
+	uiState.consoleDiv.elt.classList.add('simulator-console');
 	uiState.logDiv = createDiv()
 		.parent(uiState.consoleDiv)
 		.style('flex', '1 1 50%')
@@ -75,7 +67,9 @@ export function createUI(onConfigSave: ConfigSaveHandler): void {
 		.style('color', '#ccc')
 		.style('background-color', '#111')
 		.style('font-family', 'monospace, ui-monospace')
-		.style('font-size', CONSOLE_FONT_SIZE);
+		.style('font-size', '16px');
+	uiState.logDiv.elt.classList.add('stats-panel');
+	setConsoleHeight();
 	uiState.commandLineDiv = createDiv()
 		.parent(uiState.consoleDiv)
 		.style('flex', '1 1 50%')
@@ -88,8 +82,9 @@ export function createUI(onConfigSave: ConfigSaveHandler): void {
 		.style('border-left', '1px solid #333')
 		.style('background-color', '#111')
 		.style('color', '#ccc')
-		.style('font-family', COMMAND_PANEL_FONT)
-		.style('font-size', CONSOLE_FONT_SIZE);
+		.style('font-family', 'ERAMv300, monospace, ui-monospace')
+		.style('font-size', '16px');
+	uiState.commandLineDiv.elt.classList.add('command-panel');
 	uiState.commandOutputDiv = createDiv()
 		.parent(uiState.commandLineDiv)
 		.style('flex', '1')
@@ -98,12 +93,14 @@ export function createUI(onConfigSave: ConfigSaveHandler): void {
 		.style('padding', '4px 6px')
 		.style('white-space', 'pre-wrap')
 		.style('overflow', 'auto')
-		.style('font-family', COMMAND_PANEL_FONT)
-		.style('font-size', CONSOLE_FONT_SIZE);
+		.style('font-family', 'ERAMv300, monospace, ui-monospace')
+		.style('font-size', '16px');
+	uiState.commandOutputDiv.elt.classList.add('command-output');
 	uiState.commandInput = createInput()
 		.parent(uiState.commandLineDiv)
 		.attribute('autocomplete', 'off')
 		.attribute('spellcheck', 'false')
+		.attribute('inputmode', 'text')
 		.attribute('aria-label', 'Command line')
 		.style('width', '100%')
 		.style('box-sizing', 'border-box')
@@ -113,14 +110,16 @@ export function createUI(onConfigSave: ConfigSaveHandler): void {
 		.style('outline', 'none')
 		.style('background-color', '#080808')
 		.style('color', '#ccc')
-		.style('font-family', COMMAND_PANEL_FONT)
-		.style('font-size', CONSOLE_FONT_SIZE);
+		.style('font-family', 'ERAMv300, monospace, ui-monospace')
+		.style('font-size', '16px');
+	uiState.commandInput.elt.classList.add('command-input');
 	uiState.commandInput.elt.addEventListener('keydown', handleCommandKeyDown);
 	window.addEventListener('keydown', handleGlobalCommandLineKeyDown, true);
 	uiState.controlsDiv = createDiv()
 		.style('display', 'flex')
 		.style('gap', '16px')
 		.style('padding', '8px');
+	uiState.controlsDiv.elt.classList.add('simulator-controls');
 	uiState.gridCheckbox = createPersistentCheckbox('Show Grid', 'showGrid');
 	uiState.ringsCheckbox = createPersistentCheckbox('Show Rings', 'showRings');
 
@@ -136,12 +135,14 @@ export function createUI(onConfigSave: ConfigSaveHandler): void {
 			simState.rngBrgMode = true;
 			uiState.canvasDiv?.style('cursor', 'none');
 		});
+	uiState.rngBrgButton.elt.classList.add('rng-brg-button');
 
 	uiState.rngBrgLabel = createInput()
 		.parent(uiState.controlsDiv!)
 		.size(100)
 		.attribute('disabled', 'true')
 		.style('color', 'black');
+	uiState.rngBrgLabel.elt.classList.add('rng-brg-label');
 
 	uiState.practiceAnswerButton = createButton('Show Answer')
 		.parent(uiState.controlsDiv!)
@@ -159,6 +160,7 @@ export function createUI(onConfigSave: ConfigSaveHandler): void {
 		.mouseClicked(() => {
 			openConfigWindow();
 		});
+	uiState.configButton.elt.classList.add('config-button');
 }
 
 function openConfigWindow() {
@@ -222,10 +224,7 @@ function handleConfigEditorMessage(event: MessageEvent): void {
 }
 
 export function refreshUIForConfig(): void {
-	uiState.consoleDiv?.style(
-		'height',
-		`${simState.stats.length + simState.proximities.length + CONSOLE_HEIGHT_LH_PADDING}lh`,
-	);
+	setConsoleHeight();
 	uiState.practiceAnswerButton?.style(
 		'display',
 		uiState.displayPracticeAnswerButton ? '' : 'none',
@@ -233,9 +232,36 @@ export function refreshUIForConfig(): void {
 	clearCommandOutput();
 }
 
+function setConsoleHeight(): void {
+	const frameLineCount =
+		simState.stats.length +
+		simState.proximities.length +
+		CONSOLE_HEIGHT_LH_PADDING;
+	const outputLineCount =
+		simState.stats.length + simState.proximities.length + 1;
+
+	uiState.consoleDiv?.style('height', `${frameLineCount}lh`);
+	const statsElement = uiState.logDiv?.elt;
+	if (!statsElement) return;
+
+	const style = getComputedStyle(statsElement);
+	const fontSize = Number.parseFloat(style.fontSize);
+	const lineHeight = style.lineHeight.endsWith('px')
+		? Number.parseFloat(style.lineHeight)
+		: Number.parseFloat(style.lineHeight) * fontSize;
+	const lineHeightPx = Number.isFinite(lineHeight) && lineHeight > 0
+		? lineHeight
+		: fontSize * 1.2;
+	statsElement.style.setProperty(
+		'--stats-frame-height',
+		`${outputLineCount * lineHeightPx}px`,
+	);
+}
+
 export function handleWindowResized(): void {
 	if (!uiState.canvas || !uiState.canvasDiv || !uiState.logDiv) return;
 
+	setConsoleHeight();
 	resizeCanvas(
 		uiState.canvasDiv.elt.clientWidth,
 		uiState.canvasDiv.elt.clientHeight,
@@ -389,6 +415,7 @@ function createPersistentCheckbox(
 		.parent(uiState.controlsDiv!)
 		.style('color', '#ccc')
 		.style('font-family', 'system-ui');
+	checkbox.elt.classList.add('simulator-checkbox');
 	checkbox.changed(() => {
 		localStorage.setItem(storageKey, String(checkbox.checked()));
 	});

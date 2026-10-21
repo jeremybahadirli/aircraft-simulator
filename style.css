@@ -3,16 +3,149 @@ body {
 	margin: 0;
 	padding: 0;
 	background-color: #222;
-
 	height: 100%;
 	display: flex;
 	flex-direction: column;
 }
+
+body > main {
+	display: none;
+}
+
 canvas {
 	display: block;
+}
+
+.simulator-console {
+	flex: 0 0 auto;
+}
+
+.stats-panel {
+	padding: 4px 6px;
+	tab-size: 2;
+}
+
+.command-output {
+	font-family: inherit !important;
+}
+
+.simulator-controls {
+	align-items: center;
+	color: #ddd;
+	font-family: system-ui, sans-serif;
+}
+
+.simulator-controls button,
+.simulator-controls select {
+	min-height: 36px;
+	box-sizing: border-box;
+	border: 1px solid #555;
+	border-radius: 4px;
+	padding: 4px 9px;
+	color: #eee;
+	background: #181818;
+	font: inherit;
+}
+
+.simulator-checkbox {
+	min-height: 36px;
+	color: #ddd;
+	font-size: 15px;
+}
+
+.simulator-checkbox input {
+	accent-color: #66b9ff;
+}
+
+.rng-brg-label {
+	min-height: 36px;
+	box-sizing: border-box;
+	border: 1px solid #555;
+	border-radius: 4px;
+	padding: 4px 6px;
+	color: #eee !important;
+	background-color: #181818;
+	font: inherit;
+}
+
+.command-input:focus-visible {
+	outline: 2px solid #66b9ff !important;
+	outline-offset: -2px;
 }
 
 @font-face {
 	font-family: 'ERAMv300';
 	src: url('./ERAMv300.ttf');
+}
+
+@media (max-width: 700px) {
+	html,
+	body {
+		height: 100vh;
+		height: 100dvh;
+	}
+
+	.simulator-console {
+		flex-direction: column;
+		height: auto !important;
+		min-height: 0 !important;
+	}
+
+	.stats-panel {
+		flex: 0 0 auto !important;
+		width: 100%;
+		min-height: 0;
+		height: calc(var(--stats-frame-height) + 24px) !important;
+		padding: 12px 10px 8px;
+		white-space: pre !important;
+		color: #eee !important;
+		font-size: 11px !important;
+		line-height: 1.35;
+	}
+
+	.command-panel {
+		flex: 0 0 auto !important;
+		width: 100%;
+		max-width: none !important;
+		min-height: 0;
+		height: clamp(100px, 15vh, 145px) !important;
+		height: clamp(100px, 15dvh, 145px) !important;
+		border-top: 1px solid #444;
+		border-left: 0 !important;
+		font-size: 18px !important;
+	}
+
+	.command-output {
+		padding: 8px 10px !important;
+		font-size: 17px !important;
+	}
+
+	.command-input {
+		min-height: 40px;
+		padding: 8px 10px !important;
+		font-size: 20px !important;
+	}
+
+	.simulator-controls {
+		flex-wrap: wrap;
+		gap: 6px 8px !important;
+		padding: 6px 20px !important;
+	}
+
+	.simulator-controls button,
+	.simulator-controls select {
+		min-height: 30px;
+		padding: 6px 10px;
+		font-size: 12px;
+	}
+
+	.simulator-checkbox {
+		min-height: 20px;
+		font-size: 16px;
+	}
+
+	.rng-brg-button,
+	.rng-brg-label {
+		display: none;
+	}
 }

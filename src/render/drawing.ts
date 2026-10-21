@@ -12,7 +12,8 @@ const TARGET_PADDING_PX = 4;
 const VECTOR_STROKE_PX = 1.5;
 const LEADER_STROKE_PX = 2;
 const HALO_STROKE_PX = 2;
-const DATABLOCK_TEXT_SIZE_PX = 18;
+const DEFAULT_DATABLOCK_TEXT_SIZE_PX = 18;
+const MOBILE_DATABLOCK_TEXT_SIZE_PX = 18;
 const DATABLOCK_LINE_SPACING_PX = 6;
 const DATABLOCK_PADDING_PX = 4;
 const LEADER_LINE_PX = 52;
@@ -149,7 +150,7 @@ export function drawWind(viewport = createViewport()): void {
 		.sub(normal.copy().mult(WIND_ARROW_HALF_WIDTH_PX));
 
 	noStroke();
-	textSize(DATABLOCK_TEXT_SIZE_PX);
+	textSize(getDatablockTextSizePx());
 	drawViewText(
 		viewport,
 		windStr,
@@ -227,7 +228,8 @@ function drawAircraftDatablock(ac: Aircraft, viewport: Viewport): void {
 
 	push();
 	textFont(DATABLOCK_FONT);
-	textSize(DATABLOCK_TEXT_SIZE_PX);
+	const datablockTextSizePx = getDatablockTextSizePx();
+	textSize(datablockTextSizePx);
 
 	const lineHeight = getTextHeight();
 
@@ -254,7 +256,7 @@ function drawAircraftDatablock(ac: Aircraft, viewport: Viewport): void {
 	fill(ac.display.color);
 	lines.forEach((lineText, lineIndex) => {
 		if (lineIndex == 3) {
-			textSize((DATABLOCK_TEXT_SIZE_PX * 11) / 14);
+			textSize((datablockTextSizePx * 11) / 14);
 		}
 		drawViewText(
 			viewport,
@@ -270,6 +272,12 @@ function drawAircraftDatablock(ac: Aircraft, viewport: Viewport): void {
 	});
 
 	pop();
+}
+
+function getDatablockTextSizePx(): number {
+	return width <= 700
+		? MOBILE_DATABLOCK_TEXT_SIZE_PX
+		: DEFAULT_DATABLOCK_TEXT_SIZE_PX;
 }
 
 function drawViewPoint(viewport: Viewport, posView: ASVector): void {
