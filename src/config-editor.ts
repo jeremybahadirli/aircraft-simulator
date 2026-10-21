@@ -117,7 +117,7 @@ loadMonaco();
 function loadMonaco(): void {
 	const loaderScript = document.createElement('script');
 	loaderScript.src = new URL(
-		'./node_modules/monaco-editor/min/vs/loader.js',
+		'./dist/monaco/vs/loader.js',
 		document.baseURI,
 	).href;
 	loaderScript.onload = () => {
@@ -129,10 +129,7 @@ function loadMonaco(): void {
 
 		amdRequire.config({
 			paths: {
-				vs: new URL(
-					'./node_modules/monaco-editor/min/vs',
-					document.baseURI,
-				).href,
+				vs: new URL('./dist/monaco/vs', document.baseURI).href,
 			},
 		});
 		amdRequire(['vs/editor/editor.main'], initializeEditor);

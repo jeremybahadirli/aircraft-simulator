@@ -1,7 +1,7 @@
 {
 	"private": true,
 	"scripts": {
-		"build": "tsc --project tsconfig.json",
+		"build": "tsc --project tsconfig.json && mkdir -p dist/monaco && cp -R node_modules/monaco-editor/min/vs dist/monaco/",
 		"serve": "python3 -m http.server 4173 --bind 127.0.0.1",
 		"typecheck": "tsc --project tsconfig.json --noEmit",
 		"watch": "tsc --project tsconfig.json --watch"
