@@ -155,6 +155,7 @@ export function createUI(onConfigSave: ConfigSaveHandler): void {
 
 	uiState.configButton = createButton('Config...')
 		.parent(uiState.controlsDiv!)
+		.style('margin-left', 'auto')
 		.mouseClicked(() => {
 			openConfigWindow();
 		});
