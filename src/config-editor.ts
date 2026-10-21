@@ -341,14 +341,14 @@ function updateStatus(extraMessage = ''): void {
 			? 'Current config running. '
 			: 'Unsaved changes. ';
 		message +=
-			"'separation_practice' mode uses separation-practice-config.json.";
+			"'separation_practice' mode ignores this file; use 'separation-practice-config.json'.";
 	} else if (isInactivePracticeConfig) {
 		message = '🟡 · ';
 		message += configIsRunning
 			? 'Current config running. '
 			: 'Unsaved changes. ';
 		message +=
-			"separation-practice-config.json is inactive; select 'separation_practice' mode in config.json.";
+			"This file is inactive; set 'separation_practice' mode in 'config.json'.";
 	} else {
 		message = configIsRunning
 			? '🟢 · Current config running.'
