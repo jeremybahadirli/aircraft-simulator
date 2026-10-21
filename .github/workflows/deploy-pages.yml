@@ -33,6 +33,7 @@ jobs:
         run: |
           mkdir site
           cp index.html site/index.html
+          cp config-editor.html site/config-editor.html
           cp style.css site/style.css
           cp ERAMv300.ttf site/ERAMv300.ttf
           cp -r dist site/dist
