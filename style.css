@@ -112,7 +112,7 @@ canvas {
 		height: clamp(100px, 15dvh, 145px) !important;
 		border-top: 1px solid #444;
 		border-left: 0 !important;
-		font-size: 18px !important;
+		font-size: 11px !important;
 	}
 
 	.command-output {
