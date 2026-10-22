@@ -27,7 +27,24 @@ export function executeCommand(rawCommand: string): CommandResult {
 
 	const haloMatch = command.match(/^QP J (?:(3) )?(\S+)$/i);
 	if (haloMatch) {
-		return executeHaloCommand(haloMatch[2], haloMatch[1] === '3' ? 3 : 5);
+		return executeHaloCommand(haloMatch[1] === '3' ? 3 : 5, haloMatch[2]);
+	}
+
+	const fourthLineMatch = command.match(/^QS (`?)([A-Z0-9/+-]{1,8}) (\S+)$/i);
+	if (fourthLineMatch) {
+		return executeFourthLineCommand(
+			fourthLineMatch[1] === '`',
+			fourthLineMatch[2],
+			fourthLineMatch[3],
+		);
+	}
+
+	const altitudeMatch = command.match(/^QZ (\d{3}) (\S+)$/i);
+	if (altitudeMatch) {
+		return executeAltitudeCommand(
+			Number(altitudeMatch[1]),
+			altitudeMatch[2],
+		);
 	}
 
 	return { accept: false, message: `${rawCommand}` };
@@ -47,7 +64,6 @@ function executeDatablockSlotCommand(
 	const aircraft = resolveAircraftReference(simState.aircraftList, {
 		flid: flid,
 	});
-	console.log(aircraft)
 	if (!aircraft) return unknownFlid(flid);
 
 	aircraft.display.datablockSlot = slot;
@@ -57,7 +73,7 @@ function executeDatablockSlotCommand(
 	};
 }
 
-function executeHaloCommand(flid: string, radiusNm: 3 | 5): CommandResult {
+function executeHaloCommand(radiusNm: 3 | 5, flid: string): CommandResult {
 	const aircraft = resolveAircraftReference(simState.aircraftList, {
 		flid: flid,
 	});
@@ -72,6 +88,91 @@ function executeHaloCommand(flid: string, radiusNm: 3 | 5): CommandResult {
 	return {
 		accept: true,
 		message: `REQ/DELETE DRI\n${aircraft.callsign}/${aircraft.cid}`,
+	};
+}
+
+function executeFourthLineCommand(
+	isFreeText: boolean,
+	text: string,
+	flid: string,
+): CommandResult {
+	const aircraft = resolveAircraftReference(simState.aircraftList, {
+		flid: flid,
+	});
+	if (!aircraft) return unknownFlid(flid);
+
+	if (isFreeText) {
+		aircraft.fourthLine = text;
+		return {
+			accept: true,
+			message: `4TH LINE ENTRY`,
+		};
+	}
+
+	const invalidResult = {
+		accept: false,
+		message: `INVALID 4TH LINE FORMAT`,
+	};
+
+	const hdgSpdMatch = text.match(
+		/^(?:(?<first>\d{3})(?:\/(?<second>\d{2,3})?)?|\/(?<secondOnly>\d{2,3}))$/,
+	);
+	if (!hdgSpdMatch || !hdgSpdMatch.groups) {
+		return invalidResult;
+	}
+
+	const values = {
+		left: Number(hdgSpdMatch.groups.first),
+		right: Number(
+			hdgSpdMatch.groups.second ?? hdgSpdMatch.groups.secondOnly,
+		),
+	};
+
+	// TODO: Get actual hdg/spd formatting
+	if (
+		values.left <= 0 ||
+		values.left > 360 ||
+		values.right < 50 ||
+		values.right > 400
+	) {
+		return invalidResult;
+	}
+
+	let h;
+	let s;
+	if (values.left) {
+		aircraft.flyHeading(values.left);
+		h = `H${values.left}`;
+	}
+	if (values.right < 100) {
+		aircraft.maintain({ unit: 'mach', value: values.right / 100 });
+		s = `M${values.right}`;
+	} else if (values.right >= 100) {
+		aircraft.maintain({ unit: 'ias', value: values.right });
+		s = `S${values.right}`;
+	}
+
+	aircraft.fourthLine = `${h ?? '    '} ${s ?? ''}`.trimEnd();
+
+	// TODO: Get actual command output
+	return {
+		accept: true,
+		message: `4TH LINE ENTRY`,
+	};
+}
+
+function executeAltitudeCommand(alt: number, flid: string): CommandResult {
+	const aircraft = resolveAircraftReference(simState.aircraftList, {
+		flid: flid,
+	});
+	if (!aircraft) return unknownFlid(flid);
+
+	aircraft.alt = alt;
+
+	// TODO: Get actual command output
+	return {
+		accept: true,
+		message: `FLIGHT PLAN ALTITUDE`,
 	};
 }
 
