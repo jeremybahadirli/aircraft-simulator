@@ -328,14 +328,19 @@ function updateStatus(extraMessage = ''): void {
 	const configIsRunning =
 		runningConfigText !== null &&
 		configsMatch(editor.getValue(), runningConfigText);
-	const isIgnoredMainConfig =
+	const isInactiveMainConfig =
 		activeDocument === 'config' && simulatorMode === 'separation_practice';
 	const isInactivePracticeConfig =
 		activeDocument === 'separation-practice' &&
 		simulatorMode !== 'separation_practice';
+	const isNoSimulator = !editor || !window.opener || window.opener.closed;
 
 	let message: string;
-	if (isIgnoredMainConfig) {
+	let error = false;
+	if (isNoSimulator) {
+		message = '🔴 · Simulator window no longer available.';
+		error = true;
+	} else if (isInactiveMainConfig) {
 		message = '🟡 · ';
 		message += configIsRunning
 			? 'Current config running. '
@@ -356,7 +361,7 @@ function updateStatus(extraMessage = ''): void {
 	}
 
 	if (extraMessage) message += ` ${extraMessage}`;
-	setStatus(message);
+	setStatus(message, error);
 }
 
 function updateActiveDocumentUI(): void {
