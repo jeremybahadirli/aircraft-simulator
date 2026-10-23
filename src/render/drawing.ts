@@ -18,8 +18,8 @@ const DATABLOCK_LINE_SPACING_PX = 6;
 const DATABLOCK_PADDING_PX = 4;
 const LEADER_LINE_PX = 52;
 const DATABLOCK_FONT = 'ERAMv300';
-const WIND_ARROW_LENGTH_PX = 12;
-const WIND_ARROW_HALF_WIDTH_PX = 4;
+const WIND_ARROW_LENGTH_PX = 16;
+const WIND_ARROW_WIDTH_PX = 12;
 const PAUSED_BORDER_STROKE_PX = 8;
 const PAUSED_BORDER_COLOR = '#808080';
 
@@ -132,33 +132,31 @@ export function drawWind(
 		? atmosphere.windVel.mag().toString()
 		: atmosphere.windVel.mag().toFixed(decimalPlaces);
 
-	const anchorView = Vector2.fromXY(0, viewport.halfCanvasPx.y - 24);
+	// Draw arrow
 	const direction = headingToViewUnit(atmosphere.windVel.heading());
 	const normal = Vector2.fromXY(-direction.y, direction.x);
-	const tailView = anchorView
+	const centerView = Vector2.fromXY(0, viewport.centerCanvas.y - 24);
+	const tailView = centerView
 		.copy()
 		.sub(direction.copy().mult(WIND_ARROW_LENGTH_PX / 2));
-	const tipView = anchorView
+	const tipView = centerView
 		.copy()
 		.add(direction.copy().mult(WIND_ARROW_LENGTH_PX / 2));
 	const leftView = tailView
 		.copy()
-		.add(normal.copy().mult(WIND_ARROW_HALF_WIDTH_PX));
+		.add(normal.copy().mult(WIND_ARROW_WIDTH_PX / 2));
 	const rightView = tailView
 		.copy()
-		.sub(normal.copy().mult(WIND_ARROW_HALF_WIDTH_PX));
+		.sub(normal.copy().mult(WIND_ARROW_WIDTH_PX / 2));
+	drawViewTriangle(viewport, tipView, leftView, rightView);
 
 	noStroke();
 	textSize(getDatablockTextSizePx(viewport.width));
 	drawViewText(
 		viewport,
 		windStr,
-		Vector2.fromXY(anchorView.x - 28, anchorView.y - 5),
+		Vector2.fromXY(centerView.x + 14, centerView.y - 5),
 	);
-
-	stroke('white');
-	fill('white');
-	drawViewTriangle(viewport, tipView, leftView, rightView);
 
 	pop();
 }

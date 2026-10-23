@@ -4,7 +4,7 @@ export interface Viewport {
 	width: number;
 	height: number;
 	pixelsPerNm: number;
-	halfCanvasPx: Vector2;
+	centerCanvas: Vector2;
 	worldToView: (position: Vector2) => Vector2;
 	viewToWorld: (position: Vector2) => Vector2;
 	viewToCanvas: (position: Vector2) => Vector2;
@@ -21,33 +21,24 @@ export function createViewport(
 	vRangeNm: number,
 ): Viewport {
 	const pixelsPerNm = height / vRangeNm;
-	const halfCanvasPx = Vector2.fromXY(width / 2, height / 2);
+	const centerCanvas = Vector2.fromXY(width / 2, height / 2);
 	const worldToView = (position: Vector2) =>
-		Vector2.fromXY(
-			position.x * pixelsPerNm,
-			position.y * pixelsPerNm,
-		);
+		Vector2.fromXY(position.x * pixelsPerNm, position.y * pixelsPerNm);
 	const viewToWorld = (position: Vector2) =>
-		Vector2.fromXY(
-			position.x / pixelsPerNm,
-			position.y / pixelsPerNm,
-		);
+		Vector2.fromXY(position.x / pixelsPerNm, position.y / pixelsPerNm);
 	const viewToCanvas = (position: Vector2) =>
 		Vector2.fromXY(
-			halfCanvasPx.x + position.x,
-			halfCanvasPx.y - position.y,
+			centerCanvas.x + position.x,
+			centerCanvas.y - position.y,
 		);
 	const canvasToView = (xPx: number, yPx: number) =>
-		Vector2.fromXY(
-			xPx - halfCanvasPx.x,
-			halfCanvasPx.y - yPx,
-		);
+		Vector2.fromXY(xPx - centerCanvas.x, centerCanvas.y - yPx);
 
 	return {
 		width,
 		height,
 		pixelsPerNm,
-		halfCanvasPx,
+		centerCanvas: centerCanvas,
 		worldToView,
 		viewToWorld,
 		viewToCanvas,
