@@ -1,5 +1,4 @@
-import { simState } from '../core/state.js';
-import { ASVector } from '../math/asvector.js';
+import { Vector2 } from '../math/vector2.js';
 import type { Aircraft } from './aircraft.js';
 
 interface AcToAcOptions {
@@ -26,12 +25,12 @@ export class Proximity {
 	name: string;
 	ac1: Aircraft;
 	ac2?: Aircraft;
-	p?: ASVector;
+	p?: Vector2;
 	proximity: number;
 	previousProximity: number;
 	lowestProximity: number;
 
-	constructor(name: string, ac1: Aircraft, ac2?: Aircraft, p?: ASVector) {
+	constructor(name: string, ac1: Aircraft, ac2?: Aircraft, p?: Vector2) {
 		this.name = name;
 		this.ac1 = ac1;
 		this.ac2 = ac2;
@@ -55,7 +54,7 @@ export class Proximity {
 		y,
 		name = `${ac1.callsign}-(${x}, ${y})`,
 	}: AcToXYOptions): Proximity {
-		return new Proximity(name, ac1, undefined, ASVector.fromXY(x, y));
+		return new Proximity(name, ac1, undefined, Vector2.fromXY(x, y));
 	}
 
 	static acToFRD({
@@ -64,7 +63,7 @@ export class Proximity {
 		d,
 		name = `${ac1.callsign}-(${r}° ${d} NM)`,
 	}: AcToFRDOptions): Proximity {
-		return new Proximity(name, ac1, undefined, ASVector.fromAngle(r, d));
+		return new Proximity(name, ac1, undefined, Vector2.fromAngle(r, d));
 	}
 
 	updateProximity(dt: number): void {
@@ -77,9 +76,9 @@ export class Proximity {
 
 		this.previousProximity = this.proximity;
 
-		let currentTargetPos: ASVector;
-		let prevTargetPos: ASVector;
-		let targetVel: ASVector;
+		let currentTargetPos: Vector2;
+		let prevTargetPos: Vector2;
+		let targetVel: Vector2;
 		if (isAcTarget) {
 			currentTargetPos = this.ac2!.pos;
 			prevTargetPos = this.ac2!.prevPos ?? this.ac2!.pos;
@@ -87,17 +86,17 @@ export class Proximity {
 		} else {
 			currentTargetPos = this.p!;
 			prevTargetPos = this.p!;
-			targetVel = ASVector.fromXY(0, 0);
+			targetVel = Vector2.fromXY(0, 0);
 		}
 
-		this.proximity = p5.Vector.dist(this.ac1.pos, currentTargetPos);
+		this.proximity = Vector2.distance(this.ac1.pos, currentTargetPos);
 		this.lowestProximity = Math.min(this.lowestProximity, this.proximity);
 
 		const prevPos1 = this.ac1.prevPos ?? this.ac1.pos;
 		const prevVel1 = this.ac1.prevVel ?? this.ac1.vel;
 
-		const r0 = p5.Vector.sub(prevPos1, prevTargetPos);
-		const v = p5.Vector.sub(prevVel1, targetVel);
+		const r0 = prevPos1.copy().sub(prevTargetPos);
+		const v = prevVel1.copy().sub(targetVel);
 
 		const vv = v.dot(v);
 		if (vv < 1e-9) {
@@ -106,7 +105,7 @@ export class Proximity {
 
 		// tStar: time at closest approach
 		let tStar = -r0.dot(v) / vv;
-		tStar = constrain(tStar, 0, dt);
+		tStar = Math.max(0, Math.min(tStar, dt));
 
 		// rStar: distance at tStar
 		const rStar = v.copy().mult(tStar).add(r0);

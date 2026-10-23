@@ -1,160 +1,122 @@
-import { MAX_LOG_LINES } from '../core/constants.js';
-import { simState, uiState } from '../core/state.js';
-import { formatNumber } from '../simulation/utils.js';
+import { MAX_LOG_LINES } from '../constants.js';
+import { formatNumber } from '../math/formatNumber.js';
+import type { SimulationState } from '../simulation/state.js';
+import type { ViewState } from '../view/state.js';
 
-const NORMAL_LINE_HEIGHT_RATIO = 1.2;
+export function printLogs(
+	state: SimulationState,
+	viewState: ViewState,
+	hours: number,
+	visibleLineCount: number | null = null,
+): void {
+	const frameLineComponents: string[][] = [];
+	const minutes = Math.trunc(hours * 60);
+	const seconds = Math.trunc((hours * 60 * 60) % 60);
+	const secondsText =
+		(seconds < 0 ? '-' : '') +
+		Math.abs(seconds).toString().padStart(2, '0');
+	frameLineComponents.push(['Time:', `${minutes}m ${secondsText}s`]);
 
-export function printLogs(hours: number): void {
-	const frameLines: string[] = [];
-	const m = Math.trunc(hours * 60);
-	const s = Math.trunc((hours * 60 * 60) % 60);
-	const sStr = (s < 0 ? '-' : '') + abs(s).toString().padStart(2, '0');
-	frameLines.push(`Time: ${m}m ${sStr}s`);
-
-	for (const stat of simState.stats) {
-		const hdgStr = formatNumber(
-			stat.ac.vel.asHeading(),
-			simState.settings.statsDecimalPlaces,
-			3
+	for (const stat of state.stats) {
+		const heading = formatNumber(
+			stat.ac.vel.heading(),
+			viewState.statsDecimalPlaces,
+			3,
 		);
-		const trkStr = formatNumber(
-			stat.ac.trk.asHeading(),
-			simState.settings.statsDecimalPlaces,
-			3
+		const track = formatNumber(
+			stat.ac.trk.heading(),
+			viewState.statsDecimalPlaces,
+			3,
 		);
-		const gsStr = formatNumber(
+		const groundSpeed = formatNumber(
 			stat.ac.trk.mag(),
-			simState.settings.statsDecimalPlaces
+			viewState.statsDecimalPlaces,
 		);
-		frameLines.push(
+		frameLineComponents.push([
+			`${stat.name}:`,
 			[
-				`${stat.name}:\t`,
-				`hdg ${hdgStr.p} ${hdgStr.n}°\t`,
-				`trk ${trkStr.p} ${trkStr.n}°\t`,
-				`gs ${gsStr.p} ${gsStr.n} KT`,
-			].join('')
-		);
+				`hdg ${heading.p} ${heading.n}°  `,
+				`trk ${track.p} ${track.n}°  `,
+				`gs ${groundSpeed.p} ${groundSpeed.n} KT`,
+			].join(''),
+		]);
 	}
 
-	for (const pl of simState.proximities) {
-		const proximityStr = formatNumber(
-			pl.proximity,
-			simState.settings.proximityDecimalPlaces
+	for (const proximity of state.proximities) {
+		const distance = formatNumber(
+			proximity.proximity,
+			viewState.proximityDecimalPlaces,
 		);
-		const lowestProximityStr = formatNumber(
-			pl.lowestProximity,
-			simState.settings.proximityDecimalPlaces
+		const nearest = formatNumber(
+			proximity.lowestProximity,
+			viewState.proximityDecimalPlaces,
 		);
-		frameLines.push(
+		frameLineComponents.push([
+			`${proximity.name}:`,
 			[
-				`${pl.name}:\t`,
-				`proximity ${proximityStr.p} ${proximityStr.n} NM\t`,
-				`nearest ${lowestProximityStr.p} ${lowestProximityStr.n} NM`,
-			].join('')
-		);
+				`proximity ${distance.p} ${distance.n} NM  `,
+				`nearest ${nearest.p} ${nearest.n} NM`,
+			].join(''),
+		]);
 	}
-	padFrameToVisibleHeight(frameLines);
-	for (const line of frameLines) stageLog(line);
-	flushLog();
+
+	const longestLabelLength = frameLineComponents.reduce((max, [label]) => {
+		return Math.max(max, label.length);
+	}, 0);
+
+	const frameLines: string[] = frameLineComponents.map(
+		([label, value]) => `${label.padEnd(longestLabelLength + 2)}${value}`,
+	);
+
+	padFrameToVisibleHeight(frameLines, visibleLineCount);
+	for (const line of frameLines) stageLog(state, line);
 }
 
-export function stageLog(...args: string[]): void {
-	const msg = args.join('');
-	simState.logLines.push('  ' + msg);
-	if (simState.logLines.length > MAX_LOG_LINES) simState.logLines.shift();
-	simState.logLines = dedupeFrames(simState.logLines);
-	simState.logDirty = true;
+export function stageLog(state: SimulationState, ...args: string[]): void {
+	state.logLines.push(`  ${args.join('')}`);
+	if (state.logLines.length > MAX_LOG_LINES) state.logLines.shift();
+	state.logLines = dedupeFrames(state.logLines);
+	state.logDirty = true;
+}
+
+function padFrameToVisibleHeight(
+	frameLines: string[],
+	visibleLineCount: number | null,
+): void {
+	if (visibleLineCount === null) return;
+	const paddingLineCount = Math.max(
+		0,
+		visibleLineCount - getRenderedLineCount(frameLines),
+	);
+	for (let i = 0; i < paddingLineCount; i++) frameLines.push('');
 }
 
 function dedupeFrames(lines: string[]): string[] {
 	const frames: string[][] = [];
-	let cur: string[] = [];
-
+	let currentFrame: string[] = [];
 	for (const line of lines) {
 		if (line.startsWith('  Time:')) {
-			if (cur.length) frames.push(cur);
-			cur = [line];
+			if (currentFrame.length) frames.push(currentFrame);
+			currentFrame = [line];
 		} else {
-			cur.push(line);
+			currentFrame.push(line);
 		}
 	}
-	if (cur.length) frames.push(cur);
+	if (currentFrame.length) frames.push(currentFrame);
 
-	const out: string[] = [];
-	let lastKey: string | null = null;
-
+	const output: string[] = [];
+	let previousFrameKey: string | null = null;
 	for (const frame of frames) {
 		const key = frame.join('\n');
-		if (key !== lastKey) {
-			out.push(...frame);
-		}
-		lastKey = key;
+		if (key !== previousFrameKey) output.push(...frame);
+		previousFrameKey = key;
 	}
-
-	return out;
-}
-
-function padFrameToVisibleHeight(frameLines: string[]): void {
-	const visibleLineCount = getVisibleLogLineCount();
-	if (visibleLineCount === null) return;
-
-	const frameLineCount = getRenderedLineCount(frameLines);
-	const paddingLineCount = Math.max(0, visibleLineCount - frameLineCount);
-	for (let i = 0; i < paddingLineCount; i++) frameLines.push('');
-}
-
-function getVisibleLogLineCount(): number | null {
-	const logDiv = uiState.logDiv?.elt;
-	if (!logDiv) return null;
-
-	const lineHeight = getLogLineHeight(logDiv);
-	if (lineHeight <= 0 || logDiv.clientHeight <= 0) return null;
-
-	return Math.floor(logDiv.clientHeight / lineHeight);
-}
-
-function getLogLineHeight(element: HTMLElement): number {
-	const style = getComputedStyle(element);
-	const fontSize = parseCssPixels(style.fontSize);
-
-	return (
-		parseCssPixels(style.lineHeight) ??
-		measureLineHeight(style) ??
-		(fontSize === null ? 0 : fontSize * NORMAL_LINE_HEIGHT_RATIO)
-	);
-}
-
-function measureLineHeight(style: CSSStyleDeclaration): number | null {
-	const probe = document.createElement('div');
-	probe.textContent = 'X\nX';
-	probe.style.position = 'absolute';
-	probe.style.visibility = 'hidden';
-	probe.style.whiteSpace = 'pre';
-	probe.style.font = style.font;
-	probe.style.lineHeight = style.lineHeight;
-
-	document.body.append(probe);
-	const lineHeight = probe.getBoundingClientRect().height / 2;
-	probe.remove();
-
-	return Number.isFinite(lineHeight) && lineHeight > 0 ? lineHeight : null;
-}
-
-function parseCssPixels(value: string): number | null {
-	const pixels = Number.parseFloat(value);
-	return Number.isFinite(pixels) ? pixels : null;
+	return output;
 }
 
 function getRenderedLineCount(lines: string[]): number {
 	return lines.reduce(
 		(count, line) => count + `  ${line}`.split('\n').length,
-		0
+		0,
 	);
-}
-
-export function flushLog(): void {
-	if (!simState.logDirty || !uiState.logDiv) return;
-	uiState.logDiv.elt.textContent = simState.logLines.join('\n');
-	uiState.logDiv.elt.scrollTop = uiState.logDiv.elt.scrollHeight;
-	simState.logDirty = false;
 }

@@ -1,10 +1,11 @@
-import { CALLSIGN_REGEX, CID_REGEX } from '../core/constants.js';
-import { simState } from '../core/state.js';
-import { ASVector } from '../math/asvector.js';
+import { CALLSIGN_REGEX, CID_REGEX } from '../constants.js';
 import { SpeedConversions } from '../math/speedConversions.js';
+import { Vector2 } from '../math/vector2.js';
+import type { AircraftIdentityRegistry } from './aircraftIdentityRegistry.js';
+import type { Atmosphere } from './atmosphere.js';
+import { createVelocityDirect, createVelocityOnTrack } from './flightMath.js';
 import type { SpeedSpec } from './speed.js';
 import { resolveTas } from './speed.js';
-import { createVelocityDirect, createVelocityOnTrack } from './utils.js';
 
 export type DatablockSlot = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9;
 export interface AircraftDisplay {
@@ -24,23 +25,20 @@ const DEFAULT_AIRCRAFT_DISPLAY: AircraftDisplay = {
 	datablockSlot: 2,
 };
 const MAX_HISTORY_TARGETS = 3;
-const MAX_CIDS = 1000;
-const MAX_CALLSIGNS = MAX_CIDS * 26 * 26;
-const RANDOM_ID_ATTEMPTS = 1000;
-const allocatedCids = new Set<string>();
-const allocatedCallsigns = new Set<string>();
 
 interface BaseAircraftOptions {
 	cid?: string;
 	callsign?: string;
 	datablockFourthLine?: string;
-	pos: ASVector;
+	pos: Vector2;
 	alt?: number;
 	display?: AircraftDisplayOptions;
+	atmosphere: Atmosphere;
+	identityRegistry: AircraftIdentityRegistry;
 }
 
 type AircraftOptions = BaseAircraftOptions & {
-	vel: ASVector;
+	vel: Vector2;
 };
 
 type HeadingAircraftOptions = BaseAircraftOptions & {
@@ -54,7 +52,7 @@ type TrackAircraftOptions = BaseAircraftOptions & {
 };
 
 type DirectAircraftOptions = BaseAircraftOptions & {
-	fix: ASVector;
+	fix: Vector2;
 	speed: SpeedSpec;
 };
 
@@ -62,13 +60,14 @@ export class Aircraft {
 	cid: string;
 	callsign: string;
 	fourthLine: string;
-	pos: ASVector;
-	vel: ASVector;
+	pos: Vector2;
+	vel: Vector2;
 	alt: number;
 	display: AircraftDisplay;
-	prevPos?: ASVector;
-	prevVel?: ASVector;
-	histories: ASVector[] = [];
+	prevPos?: Vector2;
+	prevVel?: Vector2;
+	histories: Vector2[] = [];
+	private readonly atmosphere: Atmosphere;
 
 	constructor({
 		cid,
@@ -78,19 +77,19 @@ export class Aircraft {
 		vel,
 		alt = 240,
 		display,
+		atmosphere,
+		identityRegistry,
 	}: AircraftOptions) {
 		const normalizedCid =
-			cid === undefined ? generateCid() : normalizeCid(cid);
+			cid === undefined
+				? identityRegistry.createCid()
+				: normalizeCid(cid);
 		const normalizedCallsign =
 			callsign === undefined
-				? generateCallsign()
+				? identityRegistry.createCallsign()
 				: normalizeCallsign(callsign);
 
-		// TODO: Make FLID management class
-		assertIdentityAvailable(normalizedCid, allocatedCids);
-		assertIdentityAvailable(normalizedCallsign, allocatedCallsigns);
-		allocatedCids.add(normalizedCid);
-		allocatedCallsigns.add(normalizedCallsign);
+		identityRegistry.claim(normalizedCid, normalizedCallsign);
 
 		this.cid = normalizedCid;
 		this.callsign = normalizedCallsign;
@@ -104,6 +103,7 @@ export class Aircraft {
 		this.vel = vel;
 		this.alt = alt;
 		this.display = { ...DEFAULT_AIRCRAFT_DISPLAY, ...display };
+		this.atmosphere = atmosphere;
 	}
 
 	static onHeading({
@@ -115,15 +115,22 @@ export class Aircraft {
 		speed,
 		alt,
 		display,
+		atmosphere,
+		identityRegistry,
 	}: HeadingAircraftOptions): Aircraft {
 		return new Aircraft({
 			cid,
 			callsign,
 			datablockFourthLine,
 			pos,
-			vel: ASVector.fromAngle(heading, resolveTas(speed, alt ?? 240)),
+			vel: Vector2.fromAngle(
+				heading,
+				resolveTas(speed, alt ?? 240, atmosphere),
+			),
 			alt,
 			display,
+			atmosphere,
+			identityRegistry,
 		});
 	}
 
@@ -136,15 +143,23 @@ export class Aircraft {
 		speed,
 		alt,
 		display,
+		atmosphere,
+		identityRegistry,
 	}: TrackAircraftOptions): Aircraft {
 		return new Aircraft({
 			cid,
 			callsign,
 			datablockFourthLine,
 			pos,
-			vel: createVelocityOnTrack(track, resolveTas(speed, alt ?? 240)),
+			vel: createVelocityOnTrack(
+				track,
+				resolveTas(speed, alt ?? 240, atmosphere),
+				atmosphere,
+			),
 			alt,
 			display,
+			atmosphere,
+			identityRegistry,
 		});
 	}
 
@@ -157,15 +172,24 @@ export class Aircraft {
 		speed,
 		alt,
 		display,
+		atmosphere,
+		identityRegistry,
 	}: DirectAircraftOptions): Aircraft {
 		return new Aircraft({
 			cid,
 			callsign,
 			datablockFourthLine,
 			pos,
-			vel: createVelocityDirect(fix, pos, resolveTas(speed, alt ?? 240)),
+			vel: createVelocityDirect(
+				fix,
+				pos,
+				resolveTas(speed, alt ?? 240, atmosphere),
+				atmosphere,
+			),
 			alt,
 			display,
+			atmosphere,
+			identityRegistry,
 		});
 	}
 
@@ -196,28 +220,36 @@ export class Aircraft {
 	get mach(): number {
 		return SpeedConversions.tasToMach(
 			this.tas,
-			simState.atmosphere.getTemperatureCAtAltitude(this.alt),
+			this.atmosphere.getTemperatureCAtAltitude(this.alt),
 		);
 	}
 
 	set mach(value: number) {
-		this.tas = resolveTas({ unit: 'mach', value }, this.alt);
+		this.tas = resolveTas(
+			{ unit: 'mach', value },
+			this.alt,
+			this.atmosphere,
+		);
 	}
 
 	get ias(): number {
 		return SpeedConversions.tasToIas(
 			this.tas,
-			simState.atmosphere.getPressureAtAltitude(this.alt),
-			simState.atmosphere.getTemperatureCAtAltitude(this.alt),
+			this.atmosphere.getPressureAtAltitude(this.alt),
+			this.atmosphere.getTemperatureCAtAltitude(this.alt),
 		);
 	}
 
 	set ias(value: number) {
-		this.tas = resolveTas({ unit: 'ias', value }, this.alt);
+		this.tas = resolveTas(
+			{ unit: 'ias', value },
+			this.alt,
+			this.atmosphere,
+		);
 	}
 
-	get trk(): ASVector {
-		return this.vel.copy().add(simState.atmosphere.windVel);
+	get trk(): Vector2 {
+		return this.vel.copy().add(this.atmosphere.windVel);
 	}
 
 	updatePosition(hours: number): void {
@@ -226,15 +258,15 @@ export class Aircraft {
 	}
 
 	turn(degrees: number): void {
-		this.vel.asRotate(degrees);
+		this.vel.rotate(degrees);
 	}
 
 	flyHeading(heading: number): void {
-		this.vel.setASHeading(heading);
+		this.vel.setHeading(heading);
 	}
 
 	flyTrack(track: number): void {
-		this.vel = createVelocityOnTrack(track, this.tas);
+		this.vel = createVelocityOnTrack(track, this.tas, this.atmosphere);
 	}
 
 	increaseSpeed(kt: number): void {
@@ -246,7 +278,7 @@ export class Aircraft {
 	}
 
 	maintain(speed: SpeedSpec): void {
-		this.tas = resolveTas(speed, this.alt);
+		this.tas = resolveTas(speed, this.alt, this.atmosphere);
 	}
 
 	recordHistory(): void {
@@ -255,80 +287,6 @@ export class Aircraft {
 			this.histories.shift();
 		}
 	}
-}
-
-export function resetAircraftIdentityRegistry(): void {
-	allocatedCids.clear();
-	allocatedCallsigns.clear();
-}
-
-function generateCid(): string {
-	if (allocatedCids.size >= MAX_CIDS) {
-		throw new Error('No unique 3-digit CIDs remain.');
-	}
-
-	// Attempt random generation
-	for (let i = 0; i < RANDOM_ID_ATTEMPTS; i++) {
-		const cid = generateRandomDigits(3);
-		if (!allocatedCids.has(cid)) return cid;
-	}
-
-	// If random generation fails, force generate
-	for (let i = 0; i < MAX_CIDS; i++) {
-		const cid = i.toString().padStart(3, '0');
-		if (!allocatedCids.has(cid)) return cid;
-	}
-
-	throw new Error('No unique 3-digit CIDs remain.');
-}
-
-function generateCallsign(): string {
-	if (allocatedCallsigns.size >= MAX_CALLSIGNS) {
-		throw new Error('No unique generated callsigns remain.');
-	}
-
-	// Attempt random generation
-	for (let i = 0; i < RANDOM_ID_ATTEMPTS; i++) {
-		const callsign = `N${generateRandomDigits(3)}${generateRandomLetters(2)}`;
-		if (!allocatedCallsigns.has(callsign)) return callsign;
-	}
-
-	// If random generation fails, force generate
-	for (let number = 0; number < MAX_CIDS; number++) {
-		for (let firstLetter = 0; firstLetter < 26; firstLetter++) {
-			for (let secondLetter = 0; secondLetter < 26; secondLetter++) {
-				const callsign = `N${number
-					.toString()
-					.padStart(3, '0')}${letterAt(firstLetter)}${letterAt(
-					secondLetter,
-				)}`;
-				if (!allocatedCallsigns.has(callsign)) return callsign;
-			}
-		}
-	}
-
-	throw new Error('No unique generated callsigns remain.');
-}
-
-function generateRandomDigits(length: number): string {
-	let value = '';
-	for (let i = 0; i < length; i++) {
-		value += Math.floor(Math.random() * 10).toString();
-	}
-	return value;
-}
-
-function generateRandomLetters(length: number): string {
-	const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-	let value = '';
-	for (let i = 0; i < length; i++) {
-		value += letters[Math.floor(Math.random() * letters.length)];
-	}
-	return value;
-}
-
-function letterAt(index: number): string {
-	return String.fromCharCode('A'.charCodeAt(0) + index);
 }
 
 function normalizeCid(cid: string): string {
@@ -364,13 +322,4 @@ function normalizeDatablockText(
 		);
 	}
 	return normalized;
-}
-
-function assertIdentityAvailable(
-	value: string,
-	allocatedValues: Set<string>,
-): void {
-	if (allocatedValues.has(value)) {
-		throw new Error(`FLID ${value} is already assigned.`);
-	}
 }

@@ -1,6 +1,6 @@
-import { FT_TO_M, g, P0, R, T0 } from '../core/constants.js';
-import { ASVector } from '../math/asvector.js';
-import { tempCToK } from './utils.js';
+import { FT_TO_M, g, P0, R, T0 } from '../constants.js';
+import { tempCToK } from '../math/temperature.js';
+import { Vector2 } from '../math/vector2.js';
 
 export interface AtmosphereOptions {
 	wind: { from: number; speed: number };
@@ -9,14 +9,14 @@ export interface AtmosphereOptions {
 }
 
 export class Atmosphere {
-	windVel: ASVector;
+	windVel: Vector2;
 	seaLevelTemp: number;
 
 	constructor({
 		wind = { from: 0, speed: 0 },
 		seaLevelTemp = T0,
 	}: AtmosphereOptions) {
-		this.windVel = ASVector.fromAngle(wind.from + 180, wind.speed);
+		this.windVel = Vector2.fromAngle(wind.from + 180, wind.speed);
 		this.seaLevelTemp = seaLevelTemp;
 	}
 

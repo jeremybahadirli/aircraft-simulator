@@ -1,6 +1,6 @@
-import type { DatablockSlot } from '../simulation/aircraft.js';
-import { resolveAircraftReference } from '../simulation/utils.js';
-import { simState } from './state.js';
+import type { DatablockSlot } from './aircraft.js';
+import { resolveAircraftReference } from './aircraftReferences.js';
+import type { SimulationState } from './state.js';
 
 export interface CommandResult {
 	accept: boolean;
@@ -11,7 +11,10 @@ const VALID_DATABLOCK_SLOTS: readonly DatablockSlot[] = [
 	1, 2, 3, 4, 6, 7, 8, 9,
 ];
 
-export function executeCommand(rawCommand: string): CommandResult {
+export function executeCommand(
+	state: SimulationState,
+	rawCommand: string,
+): CommandResult {
 	const command = rawCommand.trim();
 	if (command.length === 0) {
 		return { accept: false, message: 'NO COMMAND' };
@@ -20,6 +23,7 @@ export function executeCommand(rawCommand: string): CommandResult {
 	const datablockMatch = command.match(/^(\d) (\S+)$/);
 	if (datablockMatch) {
 		return executeDatablockSlotCommand(
+			state,
 			Number(datablockMatch[1]),
 			datablockMatch[2],
 		);
@@ -27,12 +31,17 @@ export function executeCommand(rawCommand: string): CommandResult {
 
 	const haloMatch = command.match(/^QP J (?:(3) )?(\S+)$/i);
 	if (haloMatch) {
-		return executeHaloCommand(haloMatch[1] === '3' ? 3 : 5, haloMatch[2]);
+		return executeHaloCommand(
+			state,
+			haloMatch[1] === '3' ? 3 : 5,
+			haloMatch[2],
+		);
 	}
 
 	const fourthLineMatch = command.match(/^QS (`?)([A-Z0-9/+-]{1,8}) (\S+)$/i);
 	if (fourthLineMatch) {
 		return executeFourthLineCommand(
+			state,
 			fourthLineMatch[1] === '`',
 			fourthLineMatch[2],
 			fourthLineMatch[3],
@@ -42,6 +51,7 @@ export function executeCommand(rawCommand: string): CommandResult {
 	const altitudeMatch = command.match(/^QZ (\d{3}) (\S+)$/i);
 	if (altitudeMatch) {
 		return executeAltitudeCommand(
+			state,
 			Number(altitudeMatch[1]),
 			altitudeMatch[2],
 		);
@@ -51,6 +61,7 @@ export function executeCommand(rawCommand: string): CommandResult {
 }
 
 function executeDatablockSlotCommand(
+	state: SimulationState,
 	slot: number,
 	flid: string,
 ): CommandResult {
@@ -61,7 +72,7 @@ function executeDatablockSlotCommand(
 		};
 	}
 
-	const aircraft = resolveAircraftReference(simState.aircraftList, {
+	const aircraft = resolveAircraftReference(state.aircraftList, {
 		flid: flid,
 	});
 	if (!aircraft) return unknownFlid(flid);
@@ -73,8 +84,12 @@ function executeDatablockSlotCommand(
 	};
 }
 
-function executeHaloCommand(radiusNm: 3 | 5, flid: string): CommandResult {
-	const aircraft = resolveAircraftReference(simState.aircraftList, {
+function executeHaloCommand(
+	state: SimulationState,
+	radiusNm: 3 | 5,
+	flid: string,
+): CommandResult {
+	const aircraft = resolveAircraftReference(state.aircraftList, {
 		flid: flid,
 	});
 	if (!aircraft) return unknownFlid(flid);
@@ -92,11 +107,12 @@ function executeHaloCommand(radiusNm: 3 | 5, flid: string): CommandResult {
 }
 
 function executeFourthLineCommand(
+	state: SimulationState,
 	isFreeText: boolean,
 	text: string,
 	flid: string,
 ): CommandResult {
-	const aircraft = resolveAircraftReference(simState.aircraftList, {
+	const aircraft = resolveAircraftReference(state.aircraftList, {
 		flid: flid,
 	});
 	if (!aircraft) return unknownFlid(flid);
@@ -161,8 +177,12 @@ function executeFourthLineCommand(
 	};
 }
 
-function executeAltitudeCommand(alt: number, flid: string): CommandResult {
-	const aircraft = resolveAircraftReference(simState.aircraftList, {
+function executeAltitudeCommand(
+	state: SimulationState,
+	alt: number,
+	flid: string,
+): CommandResult {
+	const aircraft = resolveAircraftReference(state.aircraftList, {
 		flid: flid,
 	});
 	if (!aircraft) return unknownFlid(flid);

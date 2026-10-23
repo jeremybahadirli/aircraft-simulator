@@ -1,4 +1,7 @@
-export {};
+import type { ConfigEditorDocument } from './config/types.js';
+import type { ConfigEditorInitMessage } from './ui/config-editor/protocol.js';
+import { parseConfigEditorClientMessage } from './ui/config-editor/protocol.js';
+import type { SimulationMode } from './simulation/state.js';
 
 interface MonacoModel {
 	setValue(value: string): void;
@@ -46,30 +49,6 @@ interface MonacoAmdRequire {
 	(modules: string[], callback: () => void): void;
 }
 
-interface ConfigEditorInitMessage {
-	type: 'config-editor:init';
-	mode: ConfigMode;
-	configText: string;
-	defaultConfigText: string;
-	separationPracticeConfigText: string;
-	defaultSeparationPracticeConfigText: string;
-	configSchema: unknown;
-	separationPracticeConfigSchema: unknown;
-	sharedConfigSchema: unknown;
-}
-
-interface ConfigEditorSaveResult {
-	type: 'config-editor:save-result';
-	document: ConfigEditorDocument;
-	success: boolean;
-	message: string;
-	text: string;
-	mode?: ConfigMode;
-}
-
-type ConfigEditorDocument = 'config' | 'separation-practice';
-type ConfigMode = 'normal' | 'separation_practice' | 'auto_position';
-
 declare global {
 	interface Window {
 		monaco?: MonacoApi;
@@ -94,7 +73,7 @@ let editor: MonacoEditor | null = null;
 let configModel: MonacoModel | null = null;
 let separationPracticeModel: MonacoModel | null = null;
 let activeDocument: ConfigEditorDocument = 'config';
-let simulatorMode: ConfigMode | null = null;
+let simulatorMode: SimulationMode | null = null;
 let defaultConfigText: string | null = null;
 let defaultSeparationPracticeConfigText: string | null = null;
 let editorDataLoaded = false;
@@ -195,10 +174,7 @@ function handleSimulatorMessage(event: MessageEvent): void {
 		return;
 	}
 
-	const message = event.data as
-		| ConfigEditorInitMessage
-		| ConfigEditorSaveResult
-		| undefined;
+	const message = parseConfigEditorClientMessage(event.data);
 	if (message?.type === 'config-editor:init') {
 		defaultConfigText = message.defaultConfigText;
 		defaultSeparationPracticeConfigText =

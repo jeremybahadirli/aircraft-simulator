@@ -5,14 +5,18 @@
 	"type": "object",
 	"additionalProperties": false,
 	"required": [
-		"settings",
+		"simSettings",
+		"viewSettings",
 		"separationPracticeSettings",
 		"stats",
 		"proximities"
 	],
 	"properties": {
-		"settings": {
-			"$ref": "#/definitions/settings"
+		"simSettings": {
+			"$ref": "#/definitions/simSettings"
+		},
+		"viewSettings": {
+			"$ref": "#/definitions/viewSettings"
 		},
 		"separationPracticeSettings": {
 			"$ref": "#/definitions/separationPracticeSettings"
@@ -23,15 +27,12 @@
 		}
 	},
 	"definitions": {
-		"settings": {
+		"simSettings": {
 			"type": "object",
 			"additionalProperties": false,
 			"required": [
 				"playbackSpeed",
-				"secondsPerUpdate",
-				"vRange",
-				"statsDecimalPlaces",
-				"proximityDecimalPlaces"
+				"secondsPerUpdate"
 			],
 			"properties": {
 				"playbackSpeed": {
@@ -39,7 +40,18 @@
 				},
 				"secondsPerUpdate": {
 					"$ref": "./shared-config.schema.json#/definitions/secondsPerUpdate"
-				},
+				}
+			}
+		},
+		"viewSettings": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"vRange",
+				"statsDecimalPlaces",
+				"proximityDecimalPlaces"
+			],
+			"properties": {
 				"vRange": {
 					"$ref": "./shared-config.schema.json#/definitions/vRange"
 				},

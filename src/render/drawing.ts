@@ -1,8 +1,8 @@
-import { simState, uiState } from '../core/state.js';
-import { createViewport, type Viewport } from '../core/viewport.js';
-import { ASVector } from '../math/asvector.js';
+import { formatNumber } from '../math/formatNumber.js';
+import { Vector2 } from '../math/vector2.js';
 import type { Aircraft, DatablockSlot } from '../simulation/aircraft.js';
-import { formatNumber, getMousePos } from '../simulation/utils.js';
+import type { Atmosphere } from '../simulation/atmosphere.js';
+import type { Viewport } from './viewport.js';
 
 const CROSSHAIR_ARM_PX = 10;
 const GRID_STEP_NM = 10;
@@ -23,20 +23,20 @@ const WIND_ARROW_HALF_WIDTH_PX = 4;
 const PAUSED_BORDER_STROKE_PX = 8;
 const PAUSED_BORDER_COLOR = '#808080';
 
-export function drawCanvas(viewport = createViewport()): void {
+export function drawCanvas(viewport: Viewport): void {
 	background('black');
 	stroke('gray');
 	strokeWeight(10);
-	drawViewPoint(viewport, ASVector.fromXY(0, 0));
+	drawViewPoint(viewport, Vector2.fromXY(0, 0));
 }
 
-export function drawPausedBorder(): void {
+export function drawPausedBorder(viewport: Viewport): void {
 	push();
 	stroke(PAUSED_BORDER_COLOR);
 	strokeWeight(PAUSED_BORDER_STROKE_PX);
 	strokeCap(SQUARE);
-	const rightPx = width;
-	const bottomPx = height;
+	const rightPx = viewport.width;
+	const bottomPx = viewport.height;
 	line(0, 0, rightPx, 0);
 	line(rightPx, 0, rightPx, bottomPx);
 	line(rightPx, bottomPx, 0, bottomPx);
@@ -44,57 +44,57 @@ export function drawPausedBorder(): void {
 	pop();
 }
 
-export function drawCrosshair(viewport = createViewport()): void {
+export function drawCrosshair(viewport: Viewport, pointerWorld: Vector2): void {
 	push();
 	stroke('white');
 	strokeWeight(1);
-	const mousePosView = viewport.worldToView(getMousePos(mouseX, mouseY));
+	const mousePosView = viewport.worldToView(pointerWorld);
 	drawViewLine(
 		viewport,
-		ASVector.fromXY(mousePosView.x - CROSSHAIR_ARM_PX, mousePosView.y),
-		ASVector.fromXY(mousePosView.x + CROSSHAIR_ARM_PX, mousePosView.y),
+		Vector2.fromXY(mousePosView.x - CROSSHAIR_ARM_PX, mousePosView.y),
+		Vector2.fromXY(mousePosView.x + CROSSHAIR_ARM_PX, mousePosView.y),
 	);
 	drawViewLine(
 		viewport,
-		ASVector.fromXY(mousePosView.x, mousePosView.y - CROSSHAIR_ARM_PX),
-		ASVector.fromXY(mousePosView.x, mousePosView.y + CROSSHAIR_ARM_PX),
+		Vector2.fromXY(mousePosView.x, mousePosView.y - CROSSHAIR_ARM_PX),
+		Vector2.fromXY(mousePosView.x, mousePosView.y + CROSSHAIR_ARM_PX),
 	);
 	pop();
 }
 
-export function drawGrid(viewport = createViewport()): void {
+export function drawGrid(viewport: Viewport, verticalRangeNm: number): void {
 	push();
 	stroke('gray');
 	strokeWeight(1);
 
-	const halfWidthNm = viewport.pxToNm(width) / 2;
-	const halfHeightNm = simState.settings.vRange / 2;
+	const halfWidthNm = viewport.pxToNm(viewport.width) / 2;
+	const halfHeightNm = verticalRangeNm / 2;
 
 	for (let x = 0; x <= halfWidthNm; x += GRID_STEP_NM) {
 		drawWorldLine(
 			viewport,
-			ASVector.fromXY(x, -halfHeightNm),
-			ASVector.fromXY(x, halfHeightNm),
+			Vector2.fromXY(x, -halfHeightNm),
+			Vector2.fromXY(x, halfHeightNm),
 		);
 		if (x !== 0) {
 			drawWorldLine(
 				viewport,
-				ASVector.fromXY(-x, -halfHeightNm),
-				ASVector.fromXY(-x, halfHeightNm),
+				Vector2.fromXY(-x, -halfHeightNm),
+				Vector2.fromXY(-x, halfHeightNm),
 			);
 		}
 	}
 	for (let y = 0; y <= halfHeightNm; y += GRID_STEP_NM) {
 		drawWorldLine(
 			viewport,
-			ASVector.fromXY(-halfWidthNm, y),
-			ASVector.fromXY(halfWidthNm, y),
+			Vector2.fromXY(-halfWidthNm, y),
+			Vector2.fromXY(halfWidthNm, y),
 		);
 		if (y !== 0) {
 			drawWorldLine(
 				viewport,
-				ASVector.fromXY(-halfWidthNm, -y),
-				ASVector.fromXY(halfWidthNm, -y),
+				Vector2.fromXY(-halfWidthNm, -y),
+				Vector2.fromXY(halfWidthNm, -y),
 			);
 		}
 	}
@@ -102,40 +102,39 @@ export function drawGrid(viewport = createViewport()): void {
 	pop();
 }
 
-export function drawRings(viewport = createViewport()): void {
+export function drawRings(viewport: Viewport, verticalRangeNm: number): void {
 	push();
 	noFill();
 	stroke('gray');
 	strokeWeight(1);
 
 	const maxRadiusNm =
-		createVector(viewport.pxToNm(width), simState.settings.vRange).mag() /
-		2;
+		Math.hypot(viewport.pxToNm(viewport.width), verticalRangeNm) / 2;
 
 	for (let r = GRID_STEP_NM; r < maxRadiusNm; r += GRID_STEP_NM) {
-		drawWorldCircle(viewport, ASVector.fromXY(0, 0), r);
+		drawWorldCircle(viewport, Vector2.fromXY(0, 0), r);
 	}
 
 	pop();
 }
 
-export function drawWind(viewport = createViewport()): void {
+export function drawWind(
+	viewport: Viewport,
+	atmosphere: Atmosphere,
+	decimalPlaces: number,
+): void {
 	push();
 	fill('white');
 	stroke('white');
 	strokeWeight(1.5);
 
-	const windStr = Number.isInteger(simState.atmosphere.windVel.mag())
-		? simState.atmosphere.windVel.mag().toString()
-		: simState.atmosphere.windVel
-				.mag()
-				.toFixed(simState.settings.statsDecimalPlaces);
+	const windStr = Number.isInteger(atmosphere.windVel.mag())
+		? atmosphere.windVel.mag().toString()
+		: atmosphere.windVel.mag().toFixed(decimalPlaces);
 
-	const anchorView = ASVector.fromXY(0, viewport.halfCanvasPx.y - 24);
-	const direction = headingToViewUnit(
-		simState.atmosphere.windVel.asHeading(),
-	);
-	const normal = ASVector.fromXY(-direction.y, direction.x);
+	const anchorView = Vector2.fromXY(0, viewport.halfCanvasPx.y - 24);
+	const direction = headingToViewUnit(atmosphere.windVel.heading());
+	const normal = Vector2.fromXY(-direction.y, direction.x);
 	const tailView = anchorView
 		.copy()
 		.sub(direction.copy().mult(WIND_ARROW_LENGTH_PX / 2));
@@ -150,11 +149,11 @@ export function drawWind(viewport = createViewport()): void {
 		.sub(normal.copy().mult(WIND_ARROW_HALF_WIDTH_PX));
 
 	noStroke();
-	textSize(getDatablockTextSizePx());
+	textSize(getDatablockTextSizePx(viewport.width));
 	drawViewText(
 		viewport,
 		windStr,
-		ASVector.fromXY(anchorView.x - 28, anchorView.y - 5),
+		Vector2.fromXY(anchorView.x - 28, anchorView.y - 5),
 	);
 
 	stroke('white');
@@ -166,14 +165,18 @@ export function drawWind(viewport = createViewport()): void {
 
 export function drawAircraft(
 	ac: Aircraft,
-	_index: number,
-	viewport = createViewport(),
+	viewport: Viewport,
+	vectorMinutes: number,
 ): void {
-	drawAircraftSymbol(ac, viewport);
+	drawAircraftSymbol(ac, viewport, vectorMinutes);
 	drawAircraftDatablock(ac, viewport);
 }
 
-function drawAircraftSymbol(ac: Aircraft, viewport: Viewport): void {
+function drawAircraftSymbol(
+	ac: Aircraft,
+	viewport: Viewport,
+	vectorMinutes: number,
+): void {
 	const posView = viewport.worldToView(ac.pos);
 	const color = ac.display.color;
 
@@ -193,11 +196,10 @@ function drawAircraftSymbol(ac: Aircraft, viewport: Viewport): void {
 	drawViewPoint(viewport, posView);
 
 	// Draw vector line
-	const vectorLineExtent =
-		(ac.trk.mag() / 60) * Number(uiState.vectorMinsInput?.value() ?? 0);
+	const vectorLineExtent = (ac.trk.mag() / 60) * vectorMinutes;
 	const vectorLineExtentPx = viewport.nmToPx(vectorLineExtent);
 	if (vectorLineExtentPx >= getTargetLineOffsetPx()) {
-		const direction = headingToViewUnit(ac.trk.asHeading());
+		const direction = headingToViewUnit(ac.trk.heading());
 		const endView = posView
 			.copy()
 			.add(direction.copy().mult(vectorLineExtentPx));
@@ -228,7 +230,7 @@ function drawAircraftDatablock(ac: Aircraft, viewport: Viewport): void {
 
 	push();
 	textFont(DATABLOCK_FONT);
-	const datablockTextSizePx = getDatablockTextSizePx();
+	const datablockTextSizePx = getDatablockTextSizePx(viewport.width);
 	textSize(datablockTextSizePx);
 
 	const lineHeight = getTextHeight();
@@ -261,7 +263,7 @@ function drawAircraftDatablock(ac: Aircraft, viewport: Viewport): void {
 		drawViewText(
 			viewport,
 			lineText,
-			ASVector.fromXY(
+			Vector2.fromXY(
 				originView.x + DATABLOCK_PADDING_PX,
 				originView.y -
 					DATABLOCK_PADDING_PX -
@@ -274,21 +276,21 @@ function drawAircraftDatablock(ac: Aircraft, viewport: Viewport): void {
 	pop();
 }
 
-function getDatablockTextSizePx(): number {
-	return width <= 700
+function getDatablockTextSizePx(canvasWidth: number): number {
+	return canvasWidth <= 700
 		? MOBILE_DATABLOCK_TEXT_SIZE_PX
 		: DEFAULT_DATABLOCK_TEXT_SIZE_PX;
 }
 
-function drawViewPoint(viewport: Viewport, posView: ASVector): void {
+function drawViewPoint(viewport: Viewport, posView: Vector2): void {
 	const posCanvas = viewport.viewToCanvas(posView);
 	point(posCanvas.x, posCanvas.y);
 }
 
 function drawViewLine(
 	viewport: Viewport,
-	startView: ASVector,
-	endView: ASVector,
+	startView: Vector2,
+	endView: Vector2,
 ): void {
 	const startCanvas = viewport.viewToCanvas(startView);
 	const endCanvas = viewport.viewToCanvas(endView);
@@ -297,7 +299,7 @@ function drawViewLine(
 
 function drawViewCircle(
 	viewport: Viewport,
-	centerView: ASVector,
+	centerView: Vector2,
 	diameterPx: number,
 ): void {
 	const centerCanvas = viewport.viewToCanvas(centerView);
@@ -306,9 +308,9 @@ function drawViewCircle(
 
 function drawViewTriangle(
 	viewport: Viewport,
-	p1View: ASVector,
-	p2View: ASVector,
-	p3View: ASVector,
+	p1View: Vector2,
+	p2View: Vector2,
+	p3View: Vector2,
 ): void {
 	const p1Canvas = viewport.viewToCanvas(p1View);
 	const p2Canvas = viewport.viewToCanvas(p2View);
@@ -326,7 +328,7 @@ function drawViewTriangle(
 function drawViewText(
 	viewport: Viewport,
 	value: string,
-	posView: ASVector,
+	posView: Vector2,
 ): void {
 	const posCanvas = viewport.viewToCanvas(posView);
 	text(value, posCanvas.x, posCanvas.y);
@@ -334,8 +336,8 @@ function drawViewText(
 
 function drawWorldLine(
 	viewport: Viewport,
-	startWorld: ASVector,
-	endWorld: ASVector,
+	startWorld: Vector2,
+	endWorld: Vector2,
 ): void {
 	drawViewLine(
 		viewport,
@@ -346,7 +348,7 @@ function drawWorldLine(
 
 function drawWorldCircle(
 	viewport: Viewport,
-	centerWorld: ASVector,
+	centerWorld: Vector2,
 	radiusNm: number,
 ): void {
 	drawViewCircle(
@@ -356,15 +358,15 @@ function drawWorldCircle(
 	);
 }
 
-function headingToViewUnit(heading: number): ASVector {
-	return ASVector.fromAngle(heading, 1);
+function headingToViewUnit(heading: number): Vector2 {
+	return Vector2.fromAngle(heading, 1);
 }
 
 function getTargetLineOffsetPx(): number {
 	return TARGET_POINT_PX / 2 + TARGET_PADDING_PX;
 }
 
-function getLineStart(anchorPx: ASVector, endPx: ASVector): ASVector {
+function getLineStart(anchorPx: Vector2, endPx: Vector2): Vector2 {
 	const deltaPx = endPx.copy().sub(anchorPx);
 	if (deltaPx.mag() === 0) return anchorPx.copy();
 
@@ -384,10 +386,10 @@ function getDatablockLines(ac: Aircraft): string[] {
 }
 
 function getDatablockOrigin(
-	leaderEndView: ASVector,
+	leaderEndView: Vector2,
 	blockWidthPx: number,
 	slot: DatablockSlot,
-): ASVector {
+): Vector2 {
 	const right = -blockWidthPx - DATABLOCK_PADDING_PX;
 	const bottom1 = DATABLOCK_PADDING_PX + getTextHeight();
 	const top3 =
@@ -397,20 +399,20 @@ function getDatablockOrigin(
 	switch (slot) {
 		case 1:
 		case 4:
-			return leaderEndView.copy().add(ASVector.fromXY(right, top3));
+			return leaderEndView.copy().add(Vector2.fromXY(right, top3));
 		case 2:
 		case 3:
 		case 6:
-			return leaderEndView.copy().add(ASVector.fromXY(0, top3));
+			return leaderEndView.copy().add(Vector2.fromXY(0, top3));
 		case 7:
-			return leaderEndView.copy().add(ASVector.fromXY(right, bottom1));
+			return leaderEndView.copy().add(Vector2.fromXY(right, bottom1));
 		case 8:
 		case 9:
-			return leaderEndView.copy().add(ASVector.fromXY(0, bottom1));
+			return leaderEndView.copy().add(Vector2.fromXY(0, bottom1));
 	}
 }
 
-function getLeaderEnd(anchorView: ASVector, slot: DatablockSlot): ASVector {
+function getLeaderEnd(anchorView: Vector2, slot: DatablockSlot): Vector2 {
 	let leaderDirection;
 	switch (slot) {
 		case 1:
@@ -440,7 +442,7 @@ function getLeaderEnd(anchorView: ASVector, slot: DatablockSlot): ASVector {
 	}
 	return anchorView
 		.copy()
-		.add(ASVector.fromAngle(leaderDirection, LEADER_LINE_PX));
+		.add(Vector2.fromAngle(leaderDirection, LEADER_LINE_PX));
 }
 
 function getTextHeight(text?: string): number {

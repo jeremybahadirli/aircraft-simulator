@@ -1,5 +1,5 @@
-import { GAMMA, KNOTS_PER_MPS, P0, R, T0 } from '../core/constants.js';
-import { tempCToK } from '../simulation/utils.js';
+import { GAMMA, KNOTS_PER_MPS, P0, R, T0 } from '../constants.js';
+import { tempCToK } from './temperature.js';
 
 export class SpeedConversions {
 	private static getSpeedOfSoundKt(tempC: number): number {

@@ -1,9 +1,11 @@
 {
-	"settings": {
+	"simSettings": {
 		"mode": "normal",
 		"playbackSpeed": 1,
 		"secondsPerUpdate": 12,
-		"startTimeMins": 0,
+		"startTimeMins": 0
+	},
+	"viewSettings": {
 		"vRange": 100,
 		"statsDecimalPlaces": 0,
 		"proximityDecimalPlaces": 1
