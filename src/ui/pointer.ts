@@ -5,10 +5,10 @@ export function getPointerWorldPosition(
 	x: number,
 	y: number,
 	viewport: Viewport,
-	keyIsPressed: boolean,
+	shouldRoundToWorldTenths: boolean,
 ): Vector2 {
 	const position = viewport.canvasToWorld(x, y);
-	if (!keyIsPressed) return position;
+	if (!shouldRoundToWorldTenths) return position;
 	return Vector2.fromXY(
 		Math.round(position.x * 10) / 10,
 		Math.round(position.y * 10) / 10,
