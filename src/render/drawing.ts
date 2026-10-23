@@ -27,7 +27,7 @@ export function drawCanvas(viewport: Viewport): void {
 	background('black');
 	stroke('gray');
 	strokeWeight(10);
-	drawViewPoint(viewport, Vector2.fromXY(0, 0));
+	drawWorldPoint(viewport, Vector2.fromXY(0, 0));
 }
 
 export function drawPausedBorder(viewport: Viewport): void {
@@ -177,14 +177,13 @@ function drawAircraftSymbol(
 	viewport: Viewport,
 	vectorMinutes: number,
 ): void {
-	const posView = viewport.worldToView(ac.pos);
 	const color = ac.display.color;
 
 	push();
 	stroke(HISTORY_TARGET_COLOR);
 	strokeWeight(TARGET_POINT_PX);
 	ac.histories.forEach((historyPos) => {
-		drawViewPoint(viewport, viewport.worldToView(historyPos));
+		drawWorldPoint(viewport, historyPos);
 	});
 
 	fill(color);
@@ -193,9 +192,10 @@ function drawAircraftSymbol(
 
 	// Draw target
 	strokeWeight(TARGET_POINT_PX);
-	drawViewPoint(viewport, posView);
+	drawWorldPoint(viewport, ac.pos);
 
 	// Draw vector line
+	const posView = viewport.worldToView(ac.pos);
 	const vectorLineExtent = (ac.trk.mag() / 60) * vectorMinutes;
 	const vectorLineExtentPx = viewport.nmToPx(vectorLineExtent);
 	if (vectorLineExtentPx >= getTargetLineOffsetPx()) {
@@ -212,11 +212,7 @@ function drawAircraftSymbol(
 	if (ac.display.halo) {
 		noFill();
 		strokeWeight(HALO_STROKE_PX);
-		drawViewCircle(
-			viewport,
-			posView,
-			viewport.nmToPx(ac.display.haloRadiusNm) * 2,
-		);
+		drawWorldCircle(viewport, ac.pos, ac.display.haloRadiusNm);
 	}
 
 	pop();
@@ -332,6 +328,10 @@ function drawViewText(
 ): void {
 	const posCanvas = viewport.viewToCanvas(posView);
 	text(value, posCanvas.x, posCanvas.y);
+}
+
+function drawWorldPoint(viewport: Viewport, posWorld: Vector2): void {
+	drawViewPoint(viewport, viewport.worldToView(posWorld));
 }
 
 function drawWorldLine(
