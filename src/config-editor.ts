@@ -146,6 +146,7 @@ function initializeEditor(): void {
 		tabSize: 4,
 		insertSpaces: false,
 		detectIndentation: false,
+  lineNumbers: 'none'
 	});
 	editor = activeEditor;
 	activeEditor.addCommand(
