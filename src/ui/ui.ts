@@ -137,13 +137,13 @@ class SimulatorUIController {
 			.style('padding', '8px');
 		this.view.controlsDiv!.elt.classList.add('simulator-controls');
 		this.view.gridCheckbox = this.createPersistentCheckbox(
-			'Show Grid',
+			'Grid',
 			'showGrid',
 			this.viewState.showGrid,
 			(visible) => (this.viewState.showGrid = visible),
 		);
 		this.view.ringsCheckbox = this.createPersistentCheckbox(
-			'Show Rings',
+			'Rings',
 			'showRings',
 			this.viewState.showRings,
 			(visible) => (this.viewState.showRings = visible),
