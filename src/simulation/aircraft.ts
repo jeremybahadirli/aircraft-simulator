@@ -24,7 +24,6 @@ const DEFAULT_AIRCRAFT_DISPLAY: AircraftDisplay = {
 	showDatablock: true,
 	datablockSlot: 2,
 };
-const MAX_HISTORY_TARGETS = 3;
 
 interface BaseAircraftOptions {
 	cid?: string;
@@ -281,9 +280,9 @@ export class Aircraft {
 		this.tas = resolveTas(speed, this.alt, this.atmosphere);
 	}
 
-	recordHistory(): void {
+	recordHistory(maxHistories: number): void {
 		this.histories.push(this.pos.copy());
-		if (this.histories.length > MAX_HISTORY_TARGETS) {
+		if (this.histories.length > maxHistories) {
 			this.histories.shift();
 		}
 	}

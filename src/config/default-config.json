@@ -3,7 +3,8 @@
 		"mode": "normal",
 		"playbackSpeed": 1,
 		"secondsPerUpdate": 12,
-		"startTimeMins": 0
+		"startTimeMins": 0,
+		"numHistories": 3
 	},
 	"viewSettings": {
 		"vRange": 100,

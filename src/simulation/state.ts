@@ -10,10 +10,11 @@ export type SimulationMode =
 	| 'auto_position';
 
 export interface SimulationSettings {
+	mode: SimulationMode;
 	playbackSpeed: number;
 	secondsPerUpdate: number;
 	startTimeMins: number;
-	mode: SimulationMode;
+	numHistories: number;
 }
 
 export interface SeparationPracticeSettings {

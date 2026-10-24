@@ -12,7 +12,7 @@ export function updateSimulation(state: SimulationState, nextTime: number): void
 	state.aircraftList.forEach((aircraft) => {
 		aircraft.prevPos = aircraft.pos.copy();
 		aircraft.prevVel = aircraft.vel.copy();
-		aircraft.recordHistory();
+		aircraft.recordHistory(state.simSettings.numHistories);
 		aircraft.updatePosition(nextTime - state.lastUpdate);
 	});
 	state.proximities.forEach((proximity) =>
