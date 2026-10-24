@@ -141,7 +141,7 @@ function initializeEditor(): void {
 		theme: 'vs-dark',
 		automaticLayout: true,
 		minimap: { enabled: false },
-		fontSize: 14,
+		fontSize: 16,
 		scrollBeyondLastLine: false,
 		tabSize: 4,
 		insertSpaces: false,
