@@ -11,7 +11,15 @@
 		"inlineSources": false,
 		"skipLibCheck": true,
 		"noEmitOnError": true,
-		"verbatimModuleSyntax": true
+		"verbatimModuleSyntax": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"strictBindCallApply": true,
+		"strictPropertyInitialization": true,
+		"noImplicitThis": true,
+		"alwaysStrict": true,
+		"noImplicitReturns": true
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts"],
 	"exclude": ["dist"]
