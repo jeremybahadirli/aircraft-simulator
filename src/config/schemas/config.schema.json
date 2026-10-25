@@ -86,7 +86,23 @@
 			"additionalProperties": false,
 			"required": ["wind", "seaLevelTemp", "seaLevelPressure"],
 			"properties": {
-				"wind": { "$ref": "#/definitions/wind" },
+				"wind": {
+					"type": "object",
+					"additionalProperties": false,
+					"required": ["from", "speed"],
+					"properties": {
+						"from": {
+							"$ref": "#/definitions/direction",
+							"markdownDescription": "Direction from which wind is coming in degrees."
+						},
+						"speed": {
+							"type": "number",
+							"markdownDescription": "Speed of wind in knots.",
+							"default": 0
+						}
+					},
+					"default": { "from": 360, "speed": 0 }
+				},
 				"seaLevelTemp": {
 					"type": "number",
 					"markdownDescription": "Sea level temperature in ºC. Standard atmosphere is 15.",
@@ -100,22 +116,6 @@
 					"minimum": 27,
 					"maximum": 33,
 					"default": 29.92
-				}
-			}
-		},
-		"wind": {
-			"type": "object",
-			"additionalProperties": false,
-			"required": ["from", "speed"],
-			"properties": {
-				"from": {
-					"$ref": "#/definitions/direction",
-					"markdownDescription": "Direction from which wind is coming in degrees."
-				},
-				"speed": {
-					"type": "number",
-					"markdownDescription": "Speed of wind in knots.",
-					"default": 0
 				}
 			}
 		},
@@ -161,7 +161,8 @@
 				},
 				"fourthLine": {
 					"type": "string",
-					"pattern": "^[A-Z0-9+-]{0,8}$"
+					"pattern": "^[A-Z0-9+-]{0,8}$",
+					"default": "KDFW"
 				},
 				"display": { "$ref": "#/definitions/aircraftDisplay" }
 			},
@@ -189,12 +190,14 @@
 			"properties": {
 				"color": {
 					"type": "string",
-					"markdownDescription": "Must be a valid JavaScript color string. Ex:\n\n- `red`\n- `#00ff00`\n- `rgb(0, 0, 255)`"
+					"markdownDescription": "Must be a valid JavaScript color string. Ex:\n\n- `red`\n- `#00ff00`\n- `rgb(0, 0, 255)`",
+					"default": "#FF0000"
 				},
 				"halo": { "type": "boolean" },
 				"haloRadiusNm": {
 					"type": "number",
-					"exclusiveMinimum": 0
+					"exclusiveMinimum": 0,
+					"default": 3
 				},
 				"showDatablock": { "type": "boolean" },
 				"datablockSlot": {
