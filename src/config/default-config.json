@@ -37,5 +37,5 @@
 		}
 	],
 	"stats": [{ "flid": "N737KG" }],
-	"proximities": [{ "flid1": "N737KG", "index2": 1 }]
+	"proximities": [{ "flid1": "N737KG", "index2": 2 }]
 }

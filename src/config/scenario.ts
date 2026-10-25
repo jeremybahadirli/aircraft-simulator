@@ -106,14 +106,13 @@ export function createScenario(
 	const identityRegistry = new AircraftIdentityRegistry();
 	const isSeparationPractice =
 		configData.simSettings.mode === 'separation_practice';
-	const state =
-		isSeparationPractice
-			? createSeparationPracticeState(
-					configData.simSettings.mode,
-					separationPracticeConfigData,
-					identityRegistry,
-				)
-			: createConfiguredScenario(configData, identityRegistry);
+	const state = isSeparationPractice
+		? createSeparationPracticeState(
+				configData.simSettings.mode,
+				separationPracticeConfigData,
+				identityRegistry,
+			)
+		: createConfiguredScenario(configData, identityRegistry);
 
 	state.defaultPlaybackSpeed = state.simSettings.playbackSpeed;
 	state.time = state.simSettings.startTimeMins / 60;
@@ -176,34 +175,43 @@ function getSpeed(aircraft: ConfigAircraft): SpeedSpec {
 }
 
 function createStat(
-	stat: ConfigStat,
+	configuredStat: ConfigStat,
 	aircraftList: readonly Aircraft[],
 ): Stat | undefined {
+	let zeroIndex;
+	if (configuredStat.index !== undefined) {
+		zeroIndex = configuredStat.index - 1;
+	}
 	const aircraft = resolveAircraftReference(aircraftList, {
-		flid: stat.flid,
-		index: stat.index,
+		flid: configuredStat.flid,
+		index: zeroIndex,
 	});
-	return aircraft ? Stat.create(aircraft, stat.label) : undefined;
+	return aircraft ? Stat.create(aircraft, configuredStat.label) : undefined;
 }
 
 function createProximity(
 	configuredProximity: ConfigProximity,
 	aircraftList: readonly Aircraft[],
 ): Proximity | undefined {
+	let zeroIndex1, zeroIndex2;
+	if (configuredProximity.index1 !== undefined) {
+		zeroIndex1 = configuredProximity.index1 - 1;
+	}
+	if (configuredProximity.index2 !== undefined) {
+		zeroIndex2 = configuredProximity.index2 - 1;
+	}
+
 	const ac1 = resolveAircraftReference(aircraftList, {
 		flid: configuredProximity.flid1,
-		index: configuredProximity.index1,
+		index: zeroIndex1,
 	});
 	if (!ac1) return undefined;
 
 	const name = configuredProximity.label;
-	if (
-		configuredProximity.flid2 !== undefined ||
-		configuredProximity.index2 !== undefined
-	) {
+	if (configuredProximity.flid2 !== undefined || zeroIndex2 !== undefined) {
 		const ac2 = resolveAircraftReference(aircraftList, {
 			flid: configuredProximity.flid2,
-			index: configuredProximity.index2,
+			index: zeroIndex2,
 		});
 		return ac2 ? Proximity.acToAc({ ac1, ac2, name }) : undefined;
 	}
@@ -323,7 +331,8 @@ function createSeparationPracticeState(
 		heading: 360,
 		speed: {
 			unit: 'tas',
-			value: practiceSettings.leadSpeed - practiceSettings.speedDifference,
+			value:
+				practiceSettings.leadSpeed - practiceSettings.speedDifference,
 		},
 		atmosphere,
 		identityRegistry,

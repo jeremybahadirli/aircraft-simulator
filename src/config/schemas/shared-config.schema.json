@@ -5,15 +5,15 @@
 	"definitions": {
 		"stats": {
 			"type": "array",
-			"markdownDescription": "Configures aircraft stat readouts in the console.\n\nEach entry needs an aircraft, which can be defined by `flid` or `index`. FLID is the CID or callsign, and index is the aircraft's position in `aircraftList`, with the first aircraft being 0.\n\n`label` is optional. If omitted, the callsign is used.",
+			"markdownDescription": "Configures aircraft stat readouts in the console.\n\nEach entry needs an aircraft, which can be defined by `flid` or `index`. FLID is the CID or callsign, and index is the aircraft's position in `aircraftList`, with the first aircraft being 1.\n\n`label` is optional. If omitted, the callsign is used.",
 			"items": { "$ref": "#/definitions/stat" },
 			"default": [{ "flid": "N737KG" }]
 		},
 		"proximities": {
 			"type": "array",
-			"markdownDescription": "Configures proximity readouts in the console.\n\nEach entry needs at least one aircraft: either `flid1` or `index1`. FLID is the CID or callsign, and index is the aircraft's position in `aircraftList`, with the first aircraft being 0. The second point may be either `flid2`, `index2`, or `position`.",
+			"markdownDescription": "Configures proximity readouts in the console.\n\nEach entry needs at least one aircraft: either `flid1` or `index1`. FLID is the CID or callsign, and index is the aircraft's position in `aircraftList`, with the first aircraft being 1. The second point may be either `flid2`, `index2`, or `position`.",
 			"items": { "$ref": "#/definitions/proximity" },
-			"default": [{ "flid1": "N737KG", "index2": 1 }]
+			"default": [{ "flid1": "N737KG", "index2": 2 }]
 		},
 		"stat": {
 			"type": "object",
@@ -96,7 +96,7 @@
 		"index": {
 			"type": "integer",
 			"minimum": 0,
-			"markdownDescription": "Zero-based index of the aircraft in `aircraftList`."
+			"markdownDescription": "Position of the aircraft in `aircraftList`, with the first aircraft being 1."
 		},
 		"label": {
 			"type": "string",

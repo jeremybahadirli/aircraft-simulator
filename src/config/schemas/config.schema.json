@@ -39,7 +39,7 @@
 			],
 			"properties": {
 				"mode": {
-					"markdownDescription": "Simulator mode.\n\n- `normal`: Uses the aircraft list and other settings defined in `config.json`.\n- `separation_practice`: Separation Practice mode. Generates random aircraft and uses settings defined in `separation-practice-config.json`.\n- `auto_position`: Automatically positions Aircraft 1 south of Aircraft 0 such that they will pass at 5 NM separation. Normally, place Aircraft 0 at `(0, 0)` on a heading and Aircraft 1 at `(0, 0)` on a 360 track.",
+					"markdownDescription": "Simulator mode.\n\n- `normal`: Uses the aircraft list and other settings defined in `config.json`.\n- `separation_practice`: Separation Practice mode. Generates random aircraft and uses settings defined in `separation-practice-config.json`.\n- `auto_position`: Automatically positions Aircraft 1 south of Aircraft 0 such that they will pass at 5 NM separation. Normally, place Aircraft 1 at `(0, 0)` on a heading and Aircraft 2 at `(0, 0)` on a 360 track.",
 					"type": "string",
 					"enum": ["normal", "separation_practice", "auto_position"],
 					"default": "normal"
