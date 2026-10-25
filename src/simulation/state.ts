@@ -1,13 +1,10 @@
 import type { Aircraft } from './aircraft.js';
-import type { AircraftIdentityRegistry } from './aircraftIdentityRegistry.js';
 import type { Atmosphere } from './atmosphere.js';
+import type { FlidRegistry } from './flidRegistry.js';
 import type { Proximity } from './proximity.js';
 import type { Stat } from './stat.js';
 
-export type SimulationMode =
-	| 'normal'
-	| 'separation_practice'
-	| 'auto_position';
+export type SimulationMode = 'normal' | 'separation_practice' | 'auto_position';
 
 export interface SimulationSettings {
 	mode: SimulationMode;
@@ -40,7 +37,7 @@ export interface SimulationState {
 	simSettings: SimulationSettings;
 	defaultPlaybackSpeed: number;
 	atmosphere: Atmosphere;
-	aircraftIdentityRegistry: AircraftIdentityRegistry;
+	flidRegistry: FlidRegistry;
 	aircraftList: Aircraft[];
 	stats: Stat[];
 	proximities: Proximity[];

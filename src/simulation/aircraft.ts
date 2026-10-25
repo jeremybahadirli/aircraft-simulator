@@ -1,8 +1,8 @@
 import { CALLSIGN_REGEX, CID_REGEX } from '../constants.js';
 import { SpeedConversions } from '../math/speedConversions.js';
 import { Vector2 } from '../math/vector2.js';
-import type { AircraftIdentityRegistry } from './aircraftIdentityRegistry.js';
 import type { Atmosphere } from './atmosphere.js';
+import type { FlidRegistry } from './flidRegistry.js';
 import { createVelocityDirect, createVelocityOnTrack } from './flightMath.js';
 import type { SpeedSpec } from './speed.js';
 import { resolveTas } from './speed.js';
@@ -33,7 +33,7 @@ interface BaseAircraftOptions {
 	alt?: number;
 	display?: AircraftDisplayOptions;
 	atmosphere: Atmosphere;
-	identityRegistry: AircraftIdentityRegistry;
+	flidRegistry: FlidRegistry;
 }
 
 type AircraftOptions = BaseAircraftOptions & {
@@ -77,18 +77,16 @@ export class Aircraft {
 		alt = 240,
 		display,
 		atmosphere,
-		identityRegistry,
+		flidRegistry: flidRegistry,
 	}: AircraftOptions) {
 		const normalizedCid =
-			cid === undefined
-				? identityRegistry.createCid()
-				: normalizeCid(cid);
+			cid === undefined ? flidRegistry.createCid() : normalizeCid(cid);
 		const normalizedCallsign =
 			callsign === undefined
-				? identityRegistry.createCallsign()
+				? flidRegistry.createCallsign()
 				: normalizeCallsign(callsign);
 
-		identityRegistry.claim(normalizedCid, normalizedCallsign);
+		flidRegistry.claim(normalizedCid, normalizedCallsign);
 
 		this.cid = normalizedCid;
 		this.callsign = normalizedCallsign;
@@ -115,7 +113,7 @@ export class Aircraft {
 		alt,
 		display,
 		atmosphere,
-		identityRegistry,
+		flidRegistry: flidRegistry,
 	}: HeadingAircraftOptions): Aircraft {
 		return new Aircraft({
 			cid,
@@ -129,7 +127,7 @@ export class Aircraft {
 			alt,
 			display,
 			atmosphere,
-			identityRegistry,
+			flidRegistry: flidRegistry,
 		});
 	}
 
@@ -143,7 +141,7 @@ export class Aircraft {
 		alt,
 		display,
 		atmosphere,
-		identityRegistry,
+		flidRegistry: flidRegistry,
 	}: TrackAircraftOptions): Aircraft {
 		return new Aircraft({
 			cid,
@@ -158,7 +156,7 @@ export class Aircraft {
 			alt,
 			display,
 			atmosphere,
-			identityRegistry,
+			flidRegistry: flidRegistry,
 		});
 	}
 
@@ -172,7 +170,7 @@ export class Aircraft {
 		alt,
 		display,
 		atmosphere,
-		identityRegistry,
+		flidRegistry: flidRegistry,
 	}: DirectAircraftOptions): Aircraft {
 		return new Aircraft({
 			cid,
@@ -188,7 +186,7 @@ export class Aircraft {
 			alt,
 			display,
 			atmosphere,
-			identityRegistry,
+			flidRegistry: flidRegistry,
 		});
 	}
 

@@ -1,15 +1,16 @@
-import configSchema from './schemas/config.schema.json' with { type: 'json' };
-import separationPracticeConfigSchema from './schemas/separation-practice-config.schema.json' with { type: 'json' };
-import { validateSchema } from './validation.js';
 import { Vector2 } from '../math/vector2.js';
 import { Aircraft, type AircraftDisplay } from '../simulation/aircraft.js';
-import { AircraftIdentityRegistry } from '../simulation/aircraftIdentityRegistry.js';
+import { resolveAircraftReference } from '../simulation/aircraftReferences.js';
 import {
 	Atmosphere,
 	type AtmosphereOptions,
 } from '../simulation/atmosphere.js';
+import { FlidRegistry } from '../simulation/flidRegistry.js';
 import { autoPosition, getOffset } from '../simulation/positioning.js';
 import { Proximity } from '../simulation/proximity.js';
+import { randBetween } from '../simulation/random.js';
+import type { SpeedSpec } from '../simulation/speed.js';
+import { Stat } from '../simulation/stat.js';
 import type {
 	SeparationPracticeSettings,
 	SimulationMode,
@@ -17,10 +18,9 @@ import type {
 	SimulationState,
 } from '../simulation/state.js';
 import type { ViewSettings } from '../view/state.js';
-import type { SpeedSpec } from '../simulation/speed.js';
-import { Stat } from '../simulation/stat.js';
-import { resolveAircraftReference } from '../simulation/aircraftReferences.js';
-import { randBetween } from '../simulation/random.js';
+import configSchema from './schemas/config.schema.json' with { type: 'json' };
+import separationPracticeConfigSchema from './schemas/separation-practice-config.schema.json' with { type: 'json' };
+import { validateSchema } from './validation.js';
 
 type ConfigPosition = { x: number; y: number } | { r: number; d: number };
 
@@ -103,16 +103,16 @@ export function createScenario(
 			'Invalid separation practice config',
 		);
 
-	const identityRegistry = new AircraftIdentityRegistry();
+	const flidRegistry = new FlidRegistry();
 	const isSeparationPractice =
 		configData.simSettings.mode === 'separation_practice';
 	const state = isSeparationPractice
 		? createSeparationPracticeState(
 				configData.simSettings.mode,
 				separationPracticeConfigData,
-				identityRegistry,
+				flidRegistry,
 			)
-		: createConfiguredScenario(configData, identityRegistry);
+		: createConfiguredScenario(configData, flidRegistry);
 
 	state.defaultPlaybackSpeed = state.simSettings.playbackSpeed;
 	state.time = state.simSettings.startTimeMins / 60;
@@ -134,7 +134,7 @@ function positionToVector(position: ConfigPosition): Vector2 {
 function createAircraft(
 	aircraft: ConfigAircraft,
 	atmosphere: Atmosphere,
-	identityRegistry: AircraftIdentityRegistry,
+	flidRegistry: FlidRegistry,
 ): Aircraft {
 	const options = {
 		cid: aircraft.cid,
@@ -145,7 +145,7 @@ function createAircraft(
 		datablockFourthLine: aircraft.fourthLine,
 		display: aircraft.display,
 		atmosphere,
-		identityRegistry,
+		flidRegistry: flidRegistry,
 	};
 
 	if (aircraft.heading !== undefined) {
@@ -231,7 +231,7 @@ function createProximity(
 function createBaseState(
 	simSettings: SimulationSettings,
 	atmosphere: Atmosphere,
-	identityRegistry: AircraftIdentityRegistry,
+	flidRegistry: FlidRegistry,
 	separationPracticeSettings: SeparationPracticeSettings | null,
 ): SimulationState {
 	return {
@@ -242,7 +242,7 @@ function createBaseState(
 		simSettings: { ...simSettings },
 		defaultPlaybackSpeed: simSettings.playbackSpeed,
 		atmosphere,
-		aircraftIdentityRegistry: identityRegistry,
+		flidRegistry: flidRegistry,
 		aircraftList: [],
 		stats: [],
 		proximities: [],
@@ -255,17 +255,17 @@ function createBaseState(
 
 function createConfiguredScenario(
 	configData: Config,
-	identityRegistry: AircraftIdentityRegistry,
+	flidRegistry: FlidRegistry,
 ): SimulationState {
 	const atmosphere = new Atmosphere(configData.atmosphere);
 	const state = createBaseState(
 		configData.simSettings,
 		atmosphere,
-		identityRegistry,
+		flidRegistry,
 		null,
 	);
 	state.aircraftList = configData.aircraftList.map((aircraft) =>
-		createAircraft(aircraft, atmosphere, identityRegistry),
+		createAircraft(aircraft, atmosphere, flidRegistry),
 	);
 	state.stats = configData.stats
 		.map((stat) => createStat(stat, state.aircraftList))
@@ -282,7 +282,7 @@ function createConfiguredScenario(
 function createSeparationPracticeState(
 	configuredMode: SimulationMode,
 	configData: SeparationPracticeConfig,
-	identityRegistry: AircraftIdentityRegistry,
+	flidRegistry: FlidRegistry,
 ): SimulationState {
 	const ranges = configData.separationPracticeSettings;
 	const practiceSettings: SeparationPracticeSettings = {
@@ -313,7 +313,7 @@ function createSeparationPracticeState(
 	const state = createBaseState(
 		simSettings,
 		atmosphere,
-		identityRegistry,
+		flidRegistry,
 		practiceSettings,
 	);
 
@@ -324,7 +324,7 @@ function createSeparationPracticeState(
 		speed: { unit: 'tas', value: practiceSettings.leadSpeed },
 		display: { halo: true },
 		atmosphere,
-		identityRegistry,
+		flidRegistry: flidRegistry,
 	});
 	const ac2 = Aircraft.onHeading({
 		pos: Vector2.fromXY(0, 0),
@@ -335,7 +335,7 @@ function createSeparationPracticeState(
 				practiceSettings.leadSpeed - practiceSettings.speedDifference,
 		},
 		atmosphere,
-		identityRegistry,
+		flidRegistry: flidRegistry,
 	});
 
 	const offset = getOffset(ac1, ac2, practiceSettings.separation);
