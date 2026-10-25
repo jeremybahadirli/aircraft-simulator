@@ -1,10 +1,7 @@
 import { Vector2 } from '../math/vector2.js';
-import { Aircraft, type AircraftDisplay } from '../simulation/aircraft.js';
+import { Aircraft } from '../simulation/aircraft.js';
 import { resolveAircraftReference } from '../simulation/aircraftReferences.js';
-import {
-	Atmosphere,
-	type AtmosphereOptions,
-} from '../simulation/atmosphere.js';
+import { Atmosphere } from '../simulation/atmosphere.js';
 import { FlidRegistry } from '../simulation/flidRegistry.js';
 import { autoPosition, getOffset } from '../simulation/positioning.js';
 import { Proximity } from '../simulation/proximity.js';
@@ -20,67 +17,15 @@ import type {
 import type { ViewSettings } from '../view/state.js';
 import configSchema from './schemas/config.schema.json' with { type: 'json' };
 import separationPracticeConfigSchema from './schemas/separation-practice-config.schema.json' with { type: 'json' };
+import type {
+	Config,
+	ConfigAircraft,
+	ConfigPosition,
+	ConfigProximity,
+	ConfigStat,
+	SeparationPracticeConfig,
+} from './types.js';
 import { validateSchema } from './validation.js';
-
-type ConfigPosition = { x: number; y: number } | { r: number; d: number };
-
-interface ConfigRange {
-	min: number;
-	max: number;
-}
-
-interface ConfigAircraft {
-	cid?: string;
-	callsign?: string;
-	position: ConfigPosition;
-	heading?: number;
-	track?: number;
-	directFix?: ConfigPosition;
-	alt: number;
-	tas?: number;
-	ias?: number;
-	mach?: number;
-	fourthLine?: string;
-	display: Partial<AircraftDisplay>;
-}
-
-interface ConfigStat {
-	flid?: string;
-	index?: number;
-	label?: string;
-}
-
-interface ConfigProximity {
-	flid1?: string;
-	index1?: number;
-	flid2?: string;
-	index2?: number;
-	position?: ConfigPosition;
-	label?: string;
-}
-
-interface Config {
-	simSettings: SimulationSettings;
-	viewSettings: ViewSettings;
-	atmosphere: AtmosphereOptions;
-	aircraftList: ConfigAircraft[];
-	stats: ConfigStat[];
-	proximities: ConfigProximity[];
-}
-
-interface SeparationPracticeConfig {
-	simSettings: Omit<SimulationSettings, 'startTimeMins' | 'mode'>;
-	viewSettings: ViewSettings;
-	separationPracticeSettings: {
-		startTimeRange: ConfigRange;
-		minSeparationRange: ConfigRange;
-		leadSpeedRange: ConfigRange;
-		angleRange: ConfigRange;
-		speedDifferenceRange: ConfigRange;
-	};
-	stats: ConfigStat[];
-	proximities: ConfigProximity[];
-}
 
 export interface SimulationScenario {
 	simulation: SimulationState;

@@ -4,7 +4,13 @@ import defaultSeparationPracticeConfig from './default-separation-practice-confi
 import separationPracticeConfigSchema from './schemas/separation-practice-config.schema.json' with { type: 'json' };
 import sharedConfigSchema from './schemas/shared-config.schema.json' with { type: 'json' };
 import { createScenario, type SimulationScenario } from './scenario.js';
-import type { ConfigEditorData, ConfigEditorDocument } from './types.js';
+import type {
+	Config,
+	ConfigEditorData,
+	ConfigEditorDocument,
+	SeparationPracticeConfig,
+} from './types.js';
+import { validateSchema } from './validation.js';
 
 const ACTIVE_CONFIG_STORAGE_KEY = 'aircraft-simulator.active-config';
 const ACTIVE_SEPARATION_PRACTICE_CONFIG_STORAGE_KEY =
@@ -12,16 +18,60 @@ const ACTIVE_SEPARATION_PRACTICE_CONFIG_STORAGE_KEY =
 
 export class ConfigRepository {
 	private readonly storage: Storage | null;
-	private activeConfigData: unknown;
-	private activeSeparationPracticeConfigData: unknown;
+	private activeConfigData: Config;
+	private activeSeparationPracticeConfigData: SeparationPracticeConfig;
 
 	constructor(storage: Storage | null = getBrowserStorage()) {
 		this.storage = storage;
-		this.activeConfigData =
-			readStoredConfig(storage, ACTIVE_CONFIG_STORAGE_KEY) ?? defaultConfig;
-		this.activeSeparationPracticeConfigData =
-			readStoredConfig(storage, ACTIVE_SEPARATION_PRACTICE_CONFIG_STORAGE_KEY) ??
-			defaultSeparationPracticeConfig;
+
+		const storedConfig = readStoredConfig(
+			storage,
+			ACTIVE_CONFIG_STORAGE_KEY,
+		);
+		if (storedConfig === undefined) {
+			this.activeConfigData = defaultConfig as Config;
+		} else {
+			try {
+				this.activeConfigData = validateSchema<Config>(
+					storedConfig,
+					configSchema,
+					'Invalid config',
+				);
+			} catch {
+				this.activeConfigData = defaultConfig as Config;
+				writeStoredConfig(
+					storage,
+					ACTIVE_CONFIG_STORAGE_KEY,
+					defaultConfig,
+				);
+			}
+		}
+
+		const storedSeparationPracticeConfig = readStoredConfig(
+			storage,
+			ACTIVE_SEPARATION_PRACTICE_CONFIG_STORAGE_KEY,
+		);
+		if (storedSeparationPracticeConfig === undefined) {
+			this.activeSeparationPracticeConfigData =
+				defaultSeparationPracticeConfig as SeparationPracticeConfig;
+		} else {
+			try {
+				this.activeSeparationPracticeConfigData =
+					validateSchema<SeparationPracticeConfig>(
+						storedSeparationPracticeConfig,
+						separationPracticeConfigSchema,
+						'Invalid config',
+					);
+			} catch {
+				this.activeSeparationPracticeConfigData =
+					defaultSeparationPracticeConfig as SeparationPracticeConfig;
+				writeStoredConfig(
+					storage,
+					ACTIVE_SEPARATION_PRACTICE_CONFIG_STORAGE_KEY,
+					defaultSeparationPracticeConfig,
+				);
+			}
+		}
 	}
 
 	getEditorData(): ConfigEditorData {
@@ -63,12 +113,31 @@ export class ConfigRepository {
 			document === 'config'
 				? ACTIVE_CONFIG_STORAGE_KEY
 				: ACTIVE_SEPARATION_PRACTICE_CONFIG_STORAGE_KEY;
-		if (document === 'config') this.activeConfigData = configData;
-		else this.activeSeparationPracticeConfigData = configData;
+		let validatedConfigData: Config | SeparationPracticeConfig;
+		if (document === 'config') {
+			const validatedConfig = validateSchema<Config>(
+				configData,
+				configSchema,
+				'Invalid config',
+			);
+			this.activeConfigData = validatedConfig;
+			validatedConfigData = validatedConfig;
+		} else {
+			const validatedConfig = validateSchema<SeparationPracticeConfig>(
+				configData,
+				separationPracticeConfigSchema,
+				'Invalid separation practice config',
+			);
+			this.activeSeparationPracticeConfigData = validatedConfig;
+			validatedConfigData = validatedConfig;
+		}
 
 		if (!this.storage) return false;
 		try {
-			this.storage.setItem(storageKey, JSON.stringify(configData));
+			this.storage.setItem(
+				storageKey,
+				JSON.stringify(validatedConfigData),
+			);
 			return true;
 		} catch {
 			return false;
@@ -93,5 +162,17 @@ function readStoredConfig(
 		return storedConfig == null ? undefined : JSON.parse(storedConfig);
 	} catch {
 		return undefined;
+	}
+}
+
+function writeStoredConfig(
+	storage: Storage | null,
+	storageKey: string,
+	configData: unknown,
+): void {
+	try {
+		storage?.setItem(storageKey, JSON.stringify(configData));
+	} catch {
+		// The in-memory default remains usable when storage cannot be updated.
 	}
 }
