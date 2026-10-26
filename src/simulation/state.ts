@@ -33,7 +33,6 @@ export interface SimulationState {
 	time: number;
 	lastUpdate: number;
 	nextUpdate: number;
-	nextLogTime: number;
 	simSettings: SimulationSettings;
 	defaultPlaybackSpeed: number;
 	atmosphere: Atmosphere;
@@ -42,7 +41,5 @@ export interface SimulationState {
 	stats: Stat[];
 	proximities: Proximity[];
 	events: SimulationEvent[];
-	logLines: string[];
-	logDirty: boolean;
 	separationPracticeSettings: SeparationPracticeSettings | null;
 }

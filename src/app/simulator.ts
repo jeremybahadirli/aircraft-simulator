@@ -2,7 +2,7 @@ import { ConfigRepository } from '../config/repository.js';
 import type { SimulationScenario } from '../config/scenario.js';
 import type { ConfigEditorDocument } from '../config/types.js';
 import { MILLIS_PER_HOUR } from '../constants.js';
-import { printLogs } from '../logging/logging.js';
+import { formatStatusFrame } from '../logging/logging.js';
 import { formatNumber } from '../math/formatNumber.js';
 import {
 	drawAircraft,
@@ -17,7 +17,12 @@ import { createViewport } from '../render/viewport.js';
 import { executeCommand } from '../simulation/commands.js';
 import { updateSimulation } from '../simulation/engine.js';
 import type { SimulationState } from '../simulation/state.js';
-import { flushLog, getVisibleLogLineCount } from '../ui/logPanel.js';
+import {
+	appendLogFrame,
+	createLogPanelState,
+	renderLogPanel,
+	type LogPanelState,
+} from '../ui/logPanel.js';
 import { getPointerWorldPosition } from '../ui/pointer.js';
 import type { SimulatorUI } from '../ui/state.js';
 import {
@@ -45,11 +50,18 @@ export function createSimulatorApp(): SimulatorApp {
 	let simulation: SimulationState | null = null;
 	let viewState: ViewState | null = null;
 	let view: SimulatorUI | null = null;
+	let logPanelState: LogPanelState | null = null;
 
 	function getSimulation(): SimulationState {
 		if (!simulation)
 			throw new Error('The simulator has not been initialized.');
 		return simulation;
+	}
+
+	function getViewState(): ViewState {
+		if (!viewState)
+			throw new Error('The simulator view has not been initialized.');
+		return viewState;
 	}
 
 	function getView(): SimulatorUI {
@@ -58,10 +70,10 @@ export function createSimulatorApp(): SimulatorApp {
 		return view;
 	}
 
-	function getViewState(): ViewState {
-		if (!viewState)
-			throw new Error('The simulator view has not been initialized.');
-		return viewState;
+	function getLogPanelState(): LogPanelState {
+		if (!logPanelState)
+			throw new Error('The log panel has not been initialized.');
+		return logPanelState;
 	}
 
 	function setup(): void {
@@ -95,8 +107,13 @@ export function createSimulatorApp(): SimulatorApp {
 		);
 		view = createdView;
 		createdView.canvas = createCanvas().parent(createdView.canvasDiv!);
+		logPanelState = createLogPanelState();
 		handleWindowResized(createdView, getSimulatorUIConfig(getSimulation()));
-		initializeSimulationRuntime(getSimulation(), getViewState());
+		initializeSimulationRuntime(
+			getSimulation(),
+			getViewState(),
+			logPanelState,
+		);
 		createdView.canvas!.mousePressed(handleCanvasMousePressed);
 	}
 
@@ -137,6 +154,7 @@ export function createSimulatorApp(): SimulatorApp {
 	function initializeSimulationRuntime(
 		state: SimulationState,
 		stateView: ViewState,
+		logPanel: LogPanelState,
 	): void {
 		const view = getView();
 		refreshUIForConfig(view, getSimulatorUIConfig(state), stateView);
@@ -146,13 +164,11 @@ export function createSimulatorApp(): SimulatorApp {
 		});
 		state.proximities.forEach((proximity) => proximity.updateProximity(0));
 		state.nextUpdate += state.simSettings.secondsPerUpdate / 60 / 60;
-		printLogs(
-			state,
-			stateView,
-			state.time,
-			getVisibleLogLineCount(view.logDiv?.elt ?? null),
+		appendLogFrame(
+			logPanel,
+			formatStatusFrame(state, stateView, state.time),
+			view.logDiv?.elt ?? null,
 		);
-		flushLog(state, view.logDiv?.elt ?? null);
 	}
 
 	function applyEditedConfig(
@@ -189,13 +205,16 @@ export function createSimulatorApp(): SimulatorApp {
 			candidate.viewSettings,
 			getViewPreferences(previousViewState),
 		);
+		const candidateLogPanelState = createLogPanelState();
 		try {
 			initializeSimulationRuntime(
 				candidate.simulation,
 				candidateViewState,
+				candidateLogPanelState,
 			);
-			simulation = candidate.simulation;
 			Object.assign(previousViewState, candidateViewState);
+			simulation = candidate.simulation;
+			logPanelState = candidateLogPanelState;
 			const wasPersisted = configRepository.commit(document, configData);
 			return {
 				success: true,
@@ -220,22 +239,18 @@ export function createSimulatorApp(): SimulatorApp {
 		const simulation = getSimulation();
 		const viewState = getViewState();
 		const view = getView();
+		const logPanelState = getLogPanelState();
 		const deltaHours =
 			(deltaTime / MILLIS_PER_HOUR) *
 			simulation.simSettings.playbackSpeed;
 		const nextTime = simulation.time + deltaHours;
 		updateSimulation(simulation, nextTime);
 
-		const logElement = view.logDiv?.elt ?? null;
-		if (simulation.simSettings.playbackSpeed !== 0) {
-			printLogs(
-				simulation,
-				viewState,
-				nextTime,
-				getVisibleLogLineCount(logElement),
-			);
-		}
-		flushLog(simulation, logElement);
+		appendLogFrame(
+			logPanelState,
+			formatStatusFrame(simulation, viewState, nextTime),
+			view.logDiv?.elt ?? null,
+		);
 
 		const viewport = createViewport(width, height, viewState.vRange);
 		drawCanvas(viewport);
@@ -275,8 +290,9 @@ export function createSimulatorApp(): SimulatorApp {
 		stateView: ViewState,
 	): void {
 		const view = getView();
+		const logPanelState = getLogPanelState();
 		refreshUIForConfig(view, getSimulatorUIConfig(state), stateView);
-		flushLog(state, view.logDiv?.elt ?? null, true);
+		renderLogPanel(logPanelState, view.logDiv?.elt ?? null);
 	}
 
 	function windowResized(): void {

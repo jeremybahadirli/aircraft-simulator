@@ -183,7 +183,6 @@ function createBaseState(
 		time: 0,
 		lastUpdate: 0,
 		nextUpdate: 0,
-		nextLogTime: 0,
 		simSettings: { ...simSettings },
 		defaultPlaybackSpeed: simSettings.playbackSpeed,
 		atmosphere,
@@ -192,8 +191,6 @@ function createBaseState(
 		stats: [],
 		proximities: [],
 		events: [],
-		logLines: ['  '],
-		logDirty: false,
 		separationPracticeSettings,
 	};
 }

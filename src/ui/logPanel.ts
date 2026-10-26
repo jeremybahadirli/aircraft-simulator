@@ -1,55 +1,46 @@
-const NORMAL_LINE_HEIGHT_RATIO = 1.2;
+import { MAX_LOG_LINES } from '../constants.js';
 
-interface LogBuffer {
-	logLines: string[];
-	logDirty: boolean;
+interface LogFrame {
+	text: string;
+	lineCount: number;
 }
 
-export function getVisibleLogLineCount(
-	element: HTMLElement | null,
-): number | null {
-	if (!element) return null;
-	const lineHeight = getLogLineHeight(element);
-	if (lineHeight <= 0 || element.clientHeight <= 0) return null;
-	return Math.floor(element.clientHeight / lineHeight);
+export interface LogPanelState {
+	frames: LogFrame[];
+	lastFrame: string | null;
+	lineCount: number;
 }
 
-export function flushLog(
-	state: LogBuffer,
+export function createLogPanelState(): LogPanelState {
+	return { frames: [], lastFrame: null, lineCount: 0 };
+}
+
+export function appendLogFrame(
+	panel: LogPanelState,
+	frame: string,
 	element: HTMLElement | null,
-	force = false,
 ): void {
-	if ((!state.logDirty && !force) || !element) return;
-	element.textContent = state.logLines.join('\n');
+	if (frame === panel.lastFrame) return;
+
+	const lineCount = frame.split('\n').length;
+	panel.frames.push({ text: frame, lineCount });
+	panel.lineCount += lineCount + (panel.frames.length > 1 ? 1 : 0);
+	panel.lastFrame = frame;
+
+	while (panel.frames.length > 1 && panel.lineCount > MAX_LOG_LINES) {
+		const oldestFrame = panel.frames.shift()!;
+		panel.lineCount -= oldestFrame.lineCount + 1;
+	}
+
+	renderLogPanel(panel, element);
+}
+
+export function renderLogPanel(
+	panel: LogPanelState,
+	element: HTMLElement | null,
+): void {
+	if (!element) return;
+	const joinedFrames = panel.frames.map(({ text }) => text).join('\n\n\n');
+	element.textContent = `\n\n${joinedFrames}\n\n`;
 	element.scrollTop = element.scrollHeight;
-	state.logDirty = false;
-}
-
-function getLogLineHeight(element: HTMLElement): number {
-	const style = getComputedStyle(element);
-	const fontSize = parseCssPixels(style.fontSize);
-	return (
-		parseCssPixels(style.lineHeight) ??
-		measureLineHeight(style) ??
-		(fontSize === null ? 0 : fontSize * NORMAL_LINE_HEIGHT_RATIO)
-	);
-}
-
-function measureLineHeight(style: CSSStyleDeclaration): number | null {
-	const probe = document.createElement('div');
-	probe.textContent = 'X\nX';
-	probe.style.position = 'absolute';
-	probe.style.visibility = 'hidden';
-	probe.style.whiteSpace = 'pre';
-	probe.style.font = style.font;
-	probe.style.lineHeight = style.lineHeight;
-	document.body.append(probe);
-	const lineHeight = probe.getBoundingClientRect().height / 2;
-	probe.remove();
-	return Number.isFinite(lineHeight) && lineHeight > 0 ? lineHeight : null;
-}
-
-function parseCssPixels(value: string): number | null {
-	const pixels = Number.parseFloat(value);
-	return Number.isFinite(pixels) ? pixels : null;
 }
