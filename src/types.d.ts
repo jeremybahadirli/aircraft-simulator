@@ -45,7 +45,6 @@ interface P5SelectElement extends P5BaseElement<HTMLSelectElement> {
 }
 
 declare const DEGREES: number;
-declare const deltaTime: number;
 declare const height: number;
 declare const keyIsPressed: boolean;
 declare const mouseX: number;

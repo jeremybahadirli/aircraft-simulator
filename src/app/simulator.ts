@@ -45,12 +45,37 @@ export interface SimulatorApp {
 	windowResized(): void;
 }
 
+interface SimulationFrameClock {
+	simulation: SimulationState;
+	lastFrameTime: number;
+}
+
 export function createSimulatorApp(): SimulatorApp {
 	const configRepository = new ConfigRepository();
 	let simulation: SimulationState | null = null;
+	let simulationFrameClock: SimulationFrameClock | null = null;
 	let viewState: ViewState | null = null;
 	let view: SimulatorUI | null = null;
 	let logPanelState: LogPanelState | null = null;
+
+	function resetSimulationFrameClock(
+		state: SimulationState,
+		baseline = performance.now(),
+	): void {
+		simulationFrameClock = { simulation: state, lastFrameTime: baseline };
+	}
+
+	function getSimulationFrameDelta(state: SimulationState): number {
+		const now = performance.now();
+		if (simulationFrameClock?.simulation !== state) {
+			resetSimulationFrameClock(state, now);
+			return 0;
+		}
+
+		const delta = Math.max(0, now - simulationFrameClock.lastFrameTime);
+		simulationFrameClock.lastFrameTime = now;
+		return delta;
+	}
 
 	function getSimulation(): SimulationState {
 		if (!simulation)
@@ -114,6 +139,7 @@ export function createSimulatorApp(): SimulatorApp {
 			getViewState(),
 			logPanelState,
 		);
+		resetSimulationFrameClock(getSimulation());
 		createdView.canvas!.mousePressed(handleCanvasMousePressed);
 	}
 
@@ -179,6 +205,7 @@ export function createSimulatorApp(): SimulatorApp {
 		message: string;
 		mode?: SimulationState['simSettings']['mode'];
 	} {
+		const configApplicationTime = performance.now();
 		let configData: unknown;
 		try {
 			configData = JSON.parse(configText);
@@ -216,6 +243,10 @@ export function createSimulatorApp(): SimulatorApp {
 			simulation = candidate.simulation;
 			logPanelState = candidateLogPanelState;
 			const wasPersisted = configRepository.commit(document, configData);
+			resetSimulationFrameClock(
+				candidate.simulation,
+				configApplicationTime,
+			);
 			return {
 				success: true,
 				message: wasPersisted
@@ -241,7 +272,7 @@ export function createSimulatorApp(): SimulatorApp {
 		const view = getView();
 		const logPanelState = getLogPanelState();
 		const deltaHours =
-			(deltaTime / MILLIS_PER_HOUR) *
+			(getSimulationFrameDelta(simulation) / MILLIS_PER_HOUR) *
 			simulation.simSettings.playbackSpeed;
 		const nextTime = simulation.time + deltaHours;
 		updateSimulation(simulation, nextTime);
